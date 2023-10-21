@@ -134,15 +134,22 @@ class T5Finetuner(pl.LightningModule):
             output = self.T5ForConditionalGeneration(input_ids=src_ids, attention_mask=src_mask, labels=labels)
         loss = torch.mean(output.loss)
 
-        factors = self.get_factor(lhs,rel,rhs)
-        l_reg, l_reg_raw, avg_lmbda = self.regularizer.penalty(factors)
+
+        factors = self.get_factor(self.ent_embed(ent_ids),self.rel_embed(rel_ids),self.ent_embed(target_entity.to(0)))
+        l_reg = self.regularizer.penalty(factors)
         complex_f_loss = nn.CrossEntropyLoss(reduction='mean')
         complex_loss = complex_f_loss(scores, target_entity)
 
-        loss = (1 - self.w) * loss + self.w * 0.01 * complex_loss
+        loss = (1 - self.w) * loss + self.w * (complex_loss + l_reg)
         self.history['loss'].append(loss.detach().item())
         return {'loss': loss}
-
+    def get_factor(self, lhs, rel, rhs):
+        lhs = lhs[:, :int(self.prompt_dim/2)], lhs[:, int(self.prompt_dim/2):]
+        rel = rel[:, :int(self.prompt_dim/2)], rel[:, int(self.prompt_dim/2):]
+        rhs = rhs[:, :int(self.prompt_dim/2)], rhs[:, int(self.prompt_dim/2):]
+        return (torch.sqrt(lhs[0] ** 2 + lhs[1] ** 2),
+                torch.sqrt(rel[0] ** 2 + rel[1] ** 2),
+                torch.sqrt(rhs[0] ** 2 + rhs[1] ** 2))
     def validation_step(self, batched_data, batch_idx, dataset_idx):
         if self.current_epoch < self.configs.skip_n_val_epoch:
             return
@@ -441,13 +448,10 @@ class N3(object):
         """
         norm, raw = 0, 0
         for f in factors:
-            raw += torch.sum(
-                torch.abs(f) ** 3
-            )
             norm += self.lmbda * torch.sum(
                 torch.abs(f) ** 3
             )
-        return norm / factors[0].shape[0], raw / factors[0].shape[0], self.lmbda
+        return norm / factors[0].shape[0]
 
     def checkpoint(self, regularizer_cache_path, epoch_id):
         if regularizer_cache_path is not None:
