@@ -143,12 +143,6 @@ class T5Finetuner(pl.LightningModule):
         loss = torch.mean(output.loss)
 
 
-        # factors = self.get_factor(self.ent_embed(ent_ids),self.rel_embed(rel_ids),self.ent_embed(target_entity.to(0)))
-        # l_reg = self.regularizer.penalty(factors)
-        # complex_f_loss = nn.CrossEntropyLoss(reduction='mean')
-        # complex_loss = complex_f_loss(scores, target_entity)
-
-        loss = (1 - self.w) * loss + self.w * (complex_loss + l_reg)
         self.history['loss'].append(loss.detach().item())
         return {'loss': loss}
     def get_factor(self, lhs, rel, rhs):
