@@ -30,11 +30,17 @@ class T5Finetuner(pl.LightningModule):
             self.ent_token_ids_in_trie_with_descrip = prefix_trie_dict['ent_token_ids_in_trie_with_descrip']
         self.T5ForConditionalGeneration = ModifiedT5ForConditionalGeneration.from_pretrained(configs.pretrained_model)
 
-        self.w = 0.5
         self.prompt_dim = self.T5ForConditionalGeneration.model_dim
-        self.rel_embed = nn.Embedding(self.configs.n_rel * 2, self.prompt_dim)
-        self.ent_embed = nn.Embedding(self.configs.n_ent, self.prompt_dim)
-        self.regularizer = N3(0.1)
+        # padding_idx, vocab_size = configs.pad_token_id, configs.vocab_size
+        checkpoint = torch.load('/media/xyf/9C1050A4105086E4/KG/chatgpt_class/KG-S2S-main/complex_wn18rr512/t5_complex_model.tar')
+        entity_embed = checkpoint['ent_embed']
+        add = torch.zeros([2,self.prompt_dim])
+        entity_embed = torch.concat((add, entity_embed), dim=0)
+        self.ent_embed = nn.Embedding.from_pretrained(entity_embed)
+        self.ent_embed.weight.requires_grad = False
+        self.rel_embed = nn.Embedding.from_pretrained(checkpoint['rel_embed'])
+        self.rel_embed.weight.requires_grad = False
+
 
         if self.configs.use_soft_prompt:
             prompt_dim = self.T5ForConditionalGeneration.model_dim
@@ -62,38 +68,40 @@ class T5Finetuner(pl.LightningModule):
         train_triples = batched_data['train_triple']
         # ent_rel .shape: (batch_size, 2)
         ent_rel = batched_data['ent_rel']
+
         mode = batched_data['mode']
         ent_ids, rel_ids = ent_rel[:, [0]], ent_rel[:, [1]]
-        target_entity = batched_data['target_ent']
-        target_entity = torch.tensor(target_entity)
-        to_score_entity = self.ent_embed.weight
-        to_score_entity = to_score_entity[:, :int(self.prompt_dim/2)], to_score_entity[:, int(self.prompt_dim/2):]
-        scores = torch.zeros([len(ent_ids),self.configs.n_ent])
-        for i in range(len(mode)):
-            if mode[i] == 'tail':
-                lhs = self.ent_embed(ent_ids[i])
-                rel = self.rel_embed(rel_ids[i])
-                # rhs = self.ent_embed(target_entity[i])
-                # rhs = torch.squeeze(rhs, dim=0)
-                lhs = lhs[:,:int(self.prompt_dim/2)], lhs[:,int(self.prompt_dim/2):]
-                rel = rel[:,:int(self.prompt_dim/2)], rel[:,int(self.prompt_dim/2):]
-                # rhs = rhs[:self.prompt_dim], rhs[self.prompt_dim:]
-                rhs_scores = (
-                        (lhs[0] * rel[0] - lhs[1] * rel[1]) @ to_score_entity[0].transpose(0, 1) +
-                        (lhs[0] * rel[1] + lhs[1] * rel[0]) @ to_score_entity[1].transpose(0, 1)
-                )
-                scores[i] = rhs_scores
-            else:
-                rhs = self.ent_embed(ent_ids[i])
-                rel = self.rel_embed(rel_ids[i] + self.configs.n_rel)
-                rhs = rhs[:,:int(self.prompt_dim/2)], rhs[:,int(self.prompt_dim/2):]
-                rel = rel[:,:int(self.prompt_dim/2)], rel[:,int(self.prompt_dim/2):]
-                lhs_scores = (
-                    (rel[0] * rhs[0] + rel[1] * rhs[1]) @ to_score_entity[0].transpose(0, 1) +
-                    (rel[0] * rhs[1] - rel[1] * rhs[0]) @ to_score_entity[1].transpose(0, 1)
-                )
-                scores[i] = lhs_scores
+        target_entity = torch.tensor(batched_data['target_ent'])
 
+
+        # to_score_entity = self.ent_embed.weight
+        # to_score_entity = to_score_entity[:, :int(self.prompt_dim/2)], to_score_entity[:, int(self.prompt_dim/2):]
+        # scores = torch.zeros([len(ent_ids),self.configs.n_ent])
+        # for i in range(len(mode)):
+        #     if mode[i] == 'tail':
+        #         lhs = self.ent_embed(ent_ids[i])
+        #         rel = self.rel_embed(rel_ids[i])
+        #         # rhs = self.ent_embed(target_entity[i])
+        #         # rhs = torch.squeeze(rhs, dim=0)
+        #         lhs = lhs[:,:int(self.prompt_dim/2)], lhs[:,int(self.prompt_dim/2):]
+        #         rel = rel[:,:int(self.prompt_dim/2)], rel[:,int(self.prompt_dim/2):]
+        #         # rhs = rhs[:self.prompt_dim], rhs[self.prompt_dim:]
+        #         rhs_scores = (
+        #                 (lhs[0] * rel[0] - lhs[1] * rel[1]) @ to_score_entity[0].transpose(0, 1) +
+        #                 (lhs[0] * rel[1] + lhs[1] * rel[0]) @ to_score_entity[1].transpose(0, 1)
+        #         )
+        #         scores[i] = rhs_scores
+        #     else:
+        #         rhs = self.ent_embed(ent_ids[i])
+        #         rel = self.rel_embed(rel_ids[i] + self.configs.n_rel)
+        #         rhs = rhs[:,:int(self.prompt_dim/2)], rhs[:,int(self.prompt_dim/2):]
+        #         rel = rel[:,:int(self.prompt_dim/2)], rel[:,int(self.prompt_dim/2):]
+        #         lhs_scores = (
+        #             (rel[0] * rhs[0] + rel[1] * rhs[1]) @ to_score_entity[0].transpose(0, 1) +
+        #             (rel[0] * rhs[1] - rel[1] * rhs[0]) @ to_score_entity[1].transpose(0, 1)
+        #         )
+        #         scores[i] = lhs_scores
+        #
 
         if self.configs.use_soft_prompt:
             # input_index .shape: (batch_size, seq_len + 4)
@@ -135,10 +143,10 @@ class T5Finetuner(pl.LightningModule):
         loss = torch.mean(output.loss)
 
 
-        factors = self.get_factor(self.ent_embed(ent_ids),self.rel_embed(rel_ids),self.ent_embed(target_entity.to(0)))
-        l_reg = self.regularizer.penalty(factors)
-        complex_f_loss = nn.CrossEntropyLoss(reduction='mean')
-        complex_loss = complex_f_loss(scores, target_entity)
+        # factors = self.get_factor(self.ent_embed(ent_ids),self.rel_embed(rel_ids),self.ent_embed(target_entity.to(0)))
+        # l_reg = self.regularizer.penalty(factors)
+        # complex_f_loss = nn.CrossEntropyLoss(reduction='mean')
+        # complex_loss = complex_f_loss(scores, target_entity)
 
         loss = (1 - self.w) * loss + self.w * (complex_loss + l_reg)
         self.history['loss'].append(loss.detach().item())
@@ -175,7 +183,7 @@ class T5Finetuner(pl.LightningModule):
         # generated_text .type: list(str) .len: batch_size * num_beams
         generated_text, scores_t5 = self.decode(src_ids, src_mask, batched_data)
         group_text = [generated_text[i:i + self.configs.num_beams] for i in range(0, len(generated_text), self.configs.num_beams)]
-        scores_t5 = [scores_t5[i:i + self.configs.num_beams] for i in range(0, len(scores_t5), self.configs.num_beams)]
+        # scores_t5 = [scores_t5[i:i + self.configs.num_beams] for i in range(0, len(scores_t5), self.configs.num_beams)]
 
         if self.configs.log_text:
             self.log_generation(group_text, src_names, target_names, batch_idx, dataset_idx)
