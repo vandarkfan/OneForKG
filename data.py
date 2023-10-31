@@ -17,7 +17,7 @@ class TrainDataset(Dataset):
         self.tgt_description_list = name_list_dict['tgt_description_list']
         self.ent_token_ids_in_trie = prefix_trie_dict['ent_token_ids_in_trie']
         self.neg_candidate_mask = prefix_trie_dict['neg_candidate_mask']
-
+        self.neigh = ground_truth_dict['neigh']
     def __len__(self):
         return len(self.train_triples) * 2
 
@@ -57,11 +57,29 @@ class TrainDataset(Dataset):
         tokenized_tgt = self.tokenizer(tgt, max_length=self.configs.train_tgt_max_length, truncation=True)
         target_ids = tokenized_tgt.input_ids
         target_mask = tokenized_tgt.attention_mask
+
+        source_ent = []
+
         target_ent = torch.tensor(tail)
         if mode == 'tail':
             target_ent = torch.tensor(tail)
+            source_ent = self.neigh[head]
+            if int(tail) + 2 in source_ent:
+                source_ent.remove(int(tail) + 2)
+            source_ent.insert(0, int(head + 2))
         if mode == 'head':
             target_ent = torch.tensor(head)
+            source_ent = self.neigh[tail]
+            if int(head) + 2 in source_ent:#去除目标实体直接在邻居中的情况
+                source_ent.remove(int(head) + 2)
+            source_ent.insert(0, int(tail + 2))#在头部加上自己
+        if len(source_ent) > 20:#最多20个元素
+            source_ent = source_ent[:20]
+        source_ent.append(1)
+        source_ent_mask = [0] * (len(source_ids))
+        source_ent_mask[:(len(source_ent))] = [1] * (len(source_ent))
+        source_ent = source_ent + [0] * (len(source_ids)-len(source_ent))
+
         ent_rel = torch.LongTensor([head, rel]) if mode == 'tail' else torch.LongTensor([tail, rel])
         out = {
                 'source_ids': source_ids,
@@ -72,6 +90,8 @@ class TrainDataset(Dataset):
                 'ent_rel': ent_rel,
                 'mode':mode,
                 'target_ent': target_ent,
+                'source_ent': source_ent,
+                'source_ent_mask': source_ent_mask
         }
 
         if self.configs.use_soft_prompt:
@@ -91,6 +111,8 @@ class TrainDataset(Dataset):
         agg_data['ent_rel'] = batchify(data, 'ent_rel')
         agg_data['mode'] = [out['mode'] for out in data]
         agg_data['target_ent'] = [out['target_ent'] for out in data]
+        agg_data['source_ent'] = batchify(data, 'source_ent', padding_value=0)
+        agg_data['source_ent_mask'] = batchify(data, 'source_ent_mask', padding_value=0)
         if self.configs.use_soft_prompt:
             agg_data['input_index'] = batchify(data, 'input_index', padding_value=0)
             agg_data['soft_prompt_index'] = batchify(data, 'soft_prompt_index')
@@ -110,7 +132,7 @@ class TestDataset(Dataset):
         self.ent_token_ids_in_trie = prefix_trie_dict['ent_token_ids_in_trie']
         self.tokenizer = tokenizer
         self.mode = mode
-
+        self.neigh = ground_truth_dict['neigh']
     def __len__(self):
         return len(self.test_triples)
 
@@ -149,11 +171,27 @@ class TestDataset(Dataset):
         # ent_rel = test_triple[[0, 2]] if self.mode == 'tail' else test_triple[[1, 2]]
         ent_rel = torch.LongTensor([head, rel]) if self.mode == 'tail' else torch.LongTensor([tail, rel])
 
+        source_ent = []
+
         target_ent = torch.tensor(tail)
         if self.mode == 'tail':
             target_ent = torch.tensor(tail)
+            source_ent = self.neigh[head]
+            if int(tail) + 2 in source_ent:
+                source_ent.remove(int(tail) + 2)
+            source_ent.insert(0, int(head + 2))
         if self.mode == 'head':
             target_ent = torch.tensor(head)
+            source_ent = self.neigh[tail]
+            if int(head) + 2 in source_ent:  # 去除目标实体直接在邻居中的情况
+                source_ent.remove(int(head) + 2)
+            source_ent.insert(0, int(tail + 2))  # 在头部加上自己
+        if len(source_ent) > 20:  # 最多20个元素
+            source_ent = source_ent[:20]
+        source_ent.append(1)
+        source_ent_mask = [0] * (len(source_ids))
+        source_ent_mask[:(len(source_ent))] = [1] * (len(source_ent))
+        source_ent = source_ent + [0] * (len(source_ids)-len(source_ent))
         out = {
             'source_ids': source_ids,
             'source_mask': source_mask,
@@ -163,6 +201,8 @@ class TestDataset(Dataset):
             'ent_rel': ent_rel,
             'mode': self.mode,
             'target_ent': target_ent,
+            'source_ent': source_ent,
+            'source_ent_mask': source_ent_mask
         }
         if self.configs.use_soft_prompt:
             input_index, soft_prompt_index, _ = get_soft_prompt_pos(self.configs, source_ids, None, self.mode)
@@ -180,6 +220,8 @@ class TestDataset(Dataset):
         agg_data['ent_rel'] = batchify(data, 'ent_rel')
         agg_data['mode'] = [out['mode'] for out in data]
         agg_data['target_ent'] = [out['target_ent'] for out in data]
+        agg_data['source_ent'] = batchify(data, 'source_ent', padding_value=0)
+        agg_data['source_ent_mask'] = batchify(data, 'source_ent_mask', padding_value=0)
         if self.configs.use_soft_prompt:
             agg_data['input_index'] = batchify(data, 'input_index', padding_value=0)
             agg_data['soft_prompt_index'] = batchify(data, 'soft_prompt_index')

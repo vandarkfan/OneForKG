@@ -19,6 +19,7 @@ class T5Finetuner(pl.LightningModule):
         self.train_head_ground_truth = ground_truth_dict['train_head_ground_truth']
         self.all_tail_ground_truth = ground_truth_dict['all_tail_ground_truth']
         self.all_head_ground_truth = ground_truth_dict['all_head_ground_truth']
+        self.neigh = ground_truth_dict['neigh']
 
         self.ent_name_list = name_list_dict['ent_name_list']
         self.rel_name_list = name_list_dict['rel_name_list']
@@ -32,16 +33,17 @@ class T5Finetuner(pl.LightningModule):
 
         self.prompt_dim = self.T5ForConditionalGeneration.model_dim
         # padding_idx, vocab_size = configs.pad_token_id, configs.vocab_size
-        checkpoint = torch.load('/media/xyf/9C1050A4105086E4/KG/chatgpt_class/KG-S2S-main/complex_wn18rr512/t5_complex_model.tar')
-        entity_embed = checkpoint['ent_embed']
-        add = torch.zeros([2,self.prompt_dim])
-        entity_embed = torch.concat((add, entity_embed), dim=0)
-        self.ent_embed = nn.Embedding.from_pretrained(entity_embed)
-        self.ent_embed.weight.requires_grad = False
-        self.rel_embed = nn.Embedding.from_pretrained(checkpoint['rel_embed'])
-        self.rel_embed.weight.requires_grad = False
-
-
+        # checkpoint = torch.load('/media/xyf/9C1050A4105086E4/KG/chatgpt_class/KG-S2S-main/complex_wn18rr512/t5_complex_model.tar')
+        # entity_embed = checkpoint['ent_embed']
+        # add = torch.zeros([2,self.prompt_dim])
+        # entity_embed = torch.concat((add, entity_embed), dim=0)
+        # self.ent_embed = nn.Embedding.from_pretrained(entity_embed)
+        # self.ent_embed.weight.requires_grad = False
+        # self.rel_embed = nn.Embedding.from_pretrained(checkpoint['rel_embed'])
+        # self.rel_embed.weight.requires_grad = False
+        prompt_dim = self.T5ForConditionalGeneration.model_dim
+        self.ent_embed = nn.Embedding(self.configs.n_ent + 2, prompt_dim)
+        self.rel_embed = nn.Embedding(self.configs.n_rel, prompt_dim)
         if self.configs.use_soft_prompt:
             prompt_dim = self.T5ForConditionalGeneration.model_dim
             self.rel_embed1 = nn.Embedding(self.configs.n_rel, prompt_dim)
@@ -68,11 +70,12 @@ class T5Finetuner(pl.LightningModule):
         train_triples = batched_data['train_triple']
         # ent_rel .shape: (batch_size, 2)
         ent_rel = batched_data['ent_rel']
-
+        entity_id = batched_data['source_ent']
+        entity_id_mask = batched_data['source_ent_mask']
         mode = batched_data['mode']
         ent_ids, rel_ids = ent_rel[:, [0]], ent_rel[:, [1]]
         target_entity = torch.tensor(batched_data['target_ent'])
-
+        entity_id_embed = self.ent_embed(entity_id)
 
         # to_score_entity = self.ent_embed.weight
         # to_score_entity = to_score_entity[:, :int(self.prompt_dim/2)], to_score_entity[:, int(self.prompt_dim/2):]
@@ -139,7 +142,7 @@ class T5Finetuner(pl.LightningModule):
         if self.configs.use_soft_prompt:
             output = self.T5ForConditionalGeneration(inputs_embeds=inputs_emb, attention_mask=input_mask, labels=labels, output_hidden_states=True)
         else:
-            output = self.T5ForConditionalGeneration(input_ids=src_ids, attention_mask=src_mask, labels=labels)
+            output = self.T5ForConditionalGeneration(input_ids=src_ids, attention_mask=src_mask, labels=labels, entity_id_embed=entity_id_embed, entity_id_mask=entity_id_mask)
         loss = torch.mean(output.loss)
 
 

@@ -24,7 +24,7 @@ import torch
 from torch import nn
 from torch.nn import CrossEntropyLoss
 from torch.utils.checkpoint import checkpoint
-
+import torch.nn.functional as F
 from transformers.activations import ACT2FN
 from transformers.file_utils import (
     DUMMY_INPUTS,
@@ -328,6 +328,19 @@ class T5Attention(nn.Module):
         self.k = nn.Linear(self.d_model, self.inner_dim, bias=False)
         self.v = nn.Linear(self.d_model, self.inner_dim, bias=False)
         self.o = nn.Linear(self.inner_dim, self.d_model, bias=False)
+        # if self.is_decoder:
+        #     self.q = nn.Linear(self.d_model, self.inner_dim, bias=False)
+        #     self.k = nn.Linear(self.d_model, self.inner_dim, bias=False)
+        #     self.v = nn.Linear(self.d_model, self.inner_dim, bias=False)
+        #     self.o = nn.Linear(self.inner_dim, self.d_model, bias=False)
+        # else:
+        #     self.q = nn.Linear(self.d_model, int(self.inner_dim ), bias=True)
+        #     self.k = nn.Linear(self.d_model, int(self.inner_dim ), bias=True)
+        #     self.v = nn.Linear(self.d_model, int(self.inner_dim ), bias=True)
+        #     self.o = nn.Linear(self.inner_dim, self.d_model, bias=True)
+        #     self.e = nn.Linear(self.d_model, int(self.inner_dim ), bias=True)
+        #     self.conv1D = nn.Conv1d(self.d_model, self.d_model, kernel_size = 2 , stride = 1, bias=True, padding=1)
+        #     self.deconv1D = nn.ConvTranspose1d(self.d_model, self.d_model, kernel_size = 2, stride = 1, bias = True)
 
         if self.has_relative_attention_bias:
             self.relative_attention_bias = nn.Embedding(self.relative_attention_num_buckets, self.n_heads)
@@ -427,6 +440,8 @@ class T5Attention(nn.Module):
         query_length=None,
         use_cache=False,
         output_attentions=False,
+        entity_id_embed=None,
+        entity_id_mask=None,
     ):
         """
         Self-attention (if key_value_states is None) or attention over source sentence (provided by key_value_states).
@@ -462,22 +477,26 @@ class T5Attention(nn.Module):
                 hidden_states = shape(proj_layer(hidden_states))
             elif past_key_value is None:
                 # cross-attn
-                # (batch_size, n_heads, seq_length, dim_per_head)
-                hidden_states = shape(proj_layer(key_value_states))
+                # (batch_size, n_heads, seq_length, dim_per_head)#原本的hidden_states是[64,31,512]
+                hidden_states = shape(proj_layer(key_value_states))#decoder进这里了,decoder里面有俩t5attention，第二个到这里来了，[64,63,512]->[64,8,63,64]
 
             if past_key_value is not None:
                 if key_value_states is None:
                     # self-attn
                     # (batch_size, n_heads, key_length, dim_per_head)
+                    print('3')
                     hidden_states = torch.cat([past_key_value, hidden_states], dim=2)
                 else:
                     # cross-attn
+                    print('4')
                     hidden_states = past_key_value
             return hidden_states
 
-        # get query states
-        query_states = shape(self.q(hidden_states))  # (batch_size, n_heads, seq_length, dim_per_head)
 
+
+        # get query states
+        query_states = self.q(hidden_states)
+        query_states = shape(query_states)
         # get key/value states
         key_states = project(
             hidden_states, self.k, key_value_states, past_key_value[0] if past_key_value is not None else None
@@ -485,6 +504,27 @@ class T5Attention(nn.Module):
         value_states = project(
             hidden_states, self.v, key_value_states, past_key_value[1] if past_key_value is not None else None
         )
+        # if self.is_decoder == False:
+        #     # hidden_states = self.conv1D(hidden_states.transpose(1,2))[:,:,:seq_length].transpose(1,2)
+        #     query_states = self.q(hidden_states)
+        #     key_states = self.k(hidden_states)#[64,63,256]
+        #     value_states = self.v(hidden_states)#[64,63,256]
+        #     entity_id_embed = self.e(entity_id_embed)
+        #     query_states = shape(query_states + entity_id_embed)
+        #     key_states = shape(key_states + entity_id_embed)
+        #     value_states = shape(value_states + entity_id_embed)
+        #
+        # else:
+        #     query_states = self.q(hidden_states)
+        #     query_states = shape(query_states)
+        #     # get key/value states
+        #     key_states = project(
+        #         hidden_states, self.k, key_value_states, past_key_value[0] if past_key_value is not None else None
+        #     )
+        #     value_states = project(
+        #         hidden_states, self.v, key_value_states, past_key_value[1] if past_key_value is not None else None
+        #     )
+
 
         # compute scores
         scores = torch.matmul(
@@ -548,6 +588,8 @@ class T5LayerSelfAttention(nn.Module):
         past_key_value=None,
         use_cache=False,
         output_attentions=False,
+        entity_id_embed=None,
+        entity_id_mask=None,
     ):
         normed_hidden_states = self.layer_norm(hidden_states)
         attention_output = self.SelfAttention(
@@ -558,6 +600,8 @@ class T5LayerSelfAttention(nn.Module):
             past_key_value=past_key_value,
             use_cache=use_cache,
             output_attentions=output_attentions,
+            entity_id_embed=entity_id_embed,
+            entity_id_mask=entity_id_mask
         )
         hidden_states = hidden_states + self.dropout(attention_output[0])
         outputs = (hidden_states,) + attention_output[1:]  # add attentions if we output them
@@ -614,7 +658,7 @@ class T5Block(nn.Module):
     def forward(
         self,
         hidden_states,
-        attention_mask=None,
+        attention_mask=None,#[64,1,1,63]0和-10000
         position_bias=None,
         encoder_hidden_states=None,
         encoder_attention_mask=None,
@@ -625,6 +669,8 @@ class T5Block(nn.Module):
         use_cache=False,
         output_attentions=False,
         return_dict=True,
+        entity_id_embed=None,
+        entity_id_mask=None,
     ):
 
         if past_key_value is not None:
@@ -644,13 +690,15 @@ class T5Block(nn.Module):
             self_attn_past_key_value, cross_attn_past_key_value = None, None
 
         self_attention_outputs = self.layer[0](
-            hidden_states,
-            attention_mask=attention_mask,
-            position_bias=position_bias,
+            hidden_states,#【64，63，512】
+            attention_mask=attention_mask,#[64,1,1,63]0和-10000
+            position_bias=position_bias,#都是N
             layer_head_mask=layer_head_mask,
             past_key_value=self_attn_past_key_value,
             use_cache=use_cache,
             output_attentions=output_attentions,
+            entity_id_embed=entity_id_embed,
+            entity_id_mask=entity_id_mask,
         )
         hidden_states, present_key_value_state = self_attention_outputs[:2]
         attention_outputs = self_attention_outputs[2:]  # Keep self-attention outputs and relative position weights
@@ -664,6 +712,7 @@ class T5Block(nn.Module):
         if do_cross_attention:
             # the actual query length is unknown for cross attention
             # if using past key value states. Need to inject it here
+            # decoder会跑到这里来
             if present_key_value_state is not None:
                 query_length = present_key_value_state[0].shape[2]
             else:
@@ -881,6 +930,8 @@ class T5Stack(T5PreTrainedModel):
         output_attentions=None,
         output_hidden_states=None,
         return_dict=None,
+        entity_id_embed=None,
+        entity_id_mask=None
     ):
         # Model parallel
         if self.model_parallel:
@@ -938,12 +989,14 @@ class T5Stack(T5PreTrainedModel):
         # If a 2D or 3D attention mask is provided for the cross-attention
         # we need to make broadcastable to [batch_size, num_heads, seq_length, seq_length]
         if self.is_decoder and encoder_hidden_states is not None:
+            #decoder到这里来了
             encoder_batch_size, encoder_sequence_length, _ = encoder_hidden_states.size()
             encoder_hidden_shape = (encoder_batch_size, encoder_sequence_length)
             if encoder_attention_mask is None:
                 encoder_attention_mask = torch.ones(encoder_hidden_shape, device=inputs_embeds.device)
             encoder_extended_attention_mask = self.invert_attention_mask(encoder_attention_mask)
         else:
+            #encoder到这里来了
             encoder_extended_attention_mask = None
 
         # Prepare head mask if needed
@@ -959,8 +1012,8 @@ class T5Stack(T5PreTrainedModel):
         hidden_states = self.dropout(inputs_embeds)
 
         for i, (layer_module, past_key_value) in enumerate(zip(self.block, past_key_values)):
-            layer_head_mask = head_mask[i]
-            cross_attn_layer_head_mask = cross_attn_head_mask[i]
+            layer_head_mask = head_mask[i]#全没有
+            cross_attn_layer_head_mask = cross_attn_head_mask[i]#全没有
             # Model parallel
             if self.model_parallel:
                 torch.cuda.set_device(hidden_states.device)
@@ -1008,7 +1061,8 @@ class T5Stack(T5PreTrainedModel):
                     None,  # past_key_value is always None with gradient checkpointing
                 )
             else:
-                layer_outputs = layer_module(
+                entity_id_embed = F.dropout(entity_id_embed, p=0.1, training=self.training)
+                layer_outputs = layer_module(#到这里了
                     hidden_states,
                     attention_mask=extended_attention_mask,
                     position_bias=position_bias,
@@ -1020,6 +1074,8 @@ class T5Stack(T5PreTrainedModel):
                     past_key_value=past_key_value,
                     use_cache=use_cache,
                     output_attentions=output_attentions,
+                    entity_id_embed=entity_id_embed,
+                    entity_id_mask=entity_id_mask,
                 )
 
             # layer_outputs is a tuple with:

@@ -210,6 +210,8 @@ class ModifiedT5ForConditionalGeneration(T5PreTrainedModel):
         output_attentions=None,
         output_hidden_states=None,
         return_dict=None,
+        entity_id_mask=None,
+        entity_id_embed=None,
     ):
 
         use_cache = use_cache if use_cache is not None else self.config.use_cache
@@ -224,14 +226,17 @@ class ModifiedT5ForConditionalGeneration(T5PreTrainedModel):
         # Encode if needed (training, first prediction pass)
         if encoder_outputs is None:
             # Convert encoder inputs in embeddings if needed
+            # print('进入encoder_output')
             encoder_outputs = self.encoder(
-                input_ids=input_ids,
-                attention_mask=attention_mask,
+                input_ids=input_ids,#有
+                attention_mask=attention_mask,#有
                 inputs_embeds=inputs_embeds,
                 head_mask=head_mask,
                 output_attentions=output_attentions,
                 output_hidden_states=output_hidden_states,
-                return_dict=return_dict,
+                return_dict=return_dict,#T
+                entity_id_embed=entity_id_embed,
+                entity_id_mask=entity_id_mask
             )
         elif return_dict and not isinstance(encoder_outputs, BaseModelOutput):
             encoder_outputs = BaseModelOutput(
@@ -262,18 +267,20 @@ class ModifiedT5ForConditionalGeneration(T5PreTrainedModel):
 
         # Decode
         decoder_outputs = self.decoder(
-            input_ids=decoder_input_ids,
+            input_ids=decoder_input_ids,#【64，31】
             attention_mask=decoder_attention_mask,
             inputs_embeds=decoder_inputs_embeds,
             past_key_values=past_key_values,
-            encoder_hidden_states=encoder_outputs[0],
-            encoder_attention_mask=attention_mask,
+            encoder_hidden_states=encoder_outputs[0],#【64，63，512】
+            encoder_attention_mask=attention_mask,#【64，63】
             head_mask=decoder_head_mask,
             cross_attn_head_mask=cross_attn_head_mask,
-            use_cache=use_cache,
+            use_cache=use_cache,#T
             output_attentions=output_attentions,
             output_hidden_states=output_hidden_states,
-            return_dict=return_dict,
+            return_dict=return_dict,#T
+            entity_id_embed=entity_id_embed,
+            entity_id_mask=entity_id_mask
         )
 
         sequence_output = decoder_outputs[0]
