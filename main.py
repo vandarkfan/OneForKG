@@ -10,7 +10,7 @@ from transformers import T5Tokenizer
 from transformers import T5Config
 from models.model import T5Finetuner
 from data import DataModule
-from helper import get_num, read, read_name, read_file, get_ground_truth, get_next_token_dict, construct_prefix_trie
+from helper import get_num, read, read_name, read_file, get_ground_truth, get_next_token_dict, construct_prefix_trie, get_neighbor_truth
 from callbacks import PrintingCallback
 os.environ['CURL_CA_BUNDLE'] = ''
 def main():
@@ -74,12 +74,13 @@ def main():
     # ground truth .shape: dict, example: {hr_str_key1: [t_id11, t_id12, ...], (hr_str_key2: [t_id21, t_id22, ...], ...}
     train_tail_ground_truth, train_head_ground_truth = get_ground_truth(configs, train_triples)
     all_tail_ground_truth, all_head_ground_truth = get_ground_truth(configs, all_triples)
-
+    neigh = get_neighbor_truth(configs, train_triples)
     ground_truth_dict = {
         'train_tail_ground_truth': train_tail_ground_truth,
         'train_head_ground_truth': train_head_ground_truth,
         'all_tail_ground_truth': all_tail_ground_truth,
         'all_head_ground_truth': all_head_ground_truth,
+        'neigh': neigh
     }
 
     datamodule = DataModule(configs, train_triples, valid_triples, test_triples, name_list_dict, prefix_trie_dict, ground_truth_dict)

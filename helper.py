@@ -68,6 +68,19 @@ def get_ground_truth(configs, triples):
             head_ground_truth[(tail, rel)].append(head)
     return tail_ground_truth, head_ground_truth
 
+def get_neighbor_truth(configs, triples):
+    countmax = 25
+    neigh = ddict(list)
+    for triple in triples:
+        if configs.temporal:
+            head, tail, rel, time = triple
+        else:
+            head, tail, rel = triple
+            neigh[head].append(tail + 2)
+            neigh[tail].append(head + 2)
+    for i in neigh:
+        neigh[i] = list(set(neigh[i]))
+    return neigh
 
 def get_next_token_dict(configs, ent_token_ids_in_trie, prefix_trie):
     neg_candidate_mask = []
