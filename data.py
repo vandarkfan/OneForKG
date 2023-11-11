@@ -6,7 +6,7 @@ from helper import batchify, get_soft_prompt_pos
 
 
 class TrainDataset(Dataset):
-    def __init__(self, configs, tokenizer, train_triples, name_list_dict, prefix_trie_dict, ground_truth_dict):
+    def __init__(self, configs, tokenizer, train_triples, name_list_dict, prefix_trie_dict, ground_truth_dict,mode):
         self.configs = configs
         self.train_triples = train_triples
         self.tokenizer = tokenizer
@@ -17,13 +17,16 @@ class TrainDataset(Dataset):
         self.tgt_description_list = name_list_dict['tgt_description_list']
         self.ent_token_ids_in_trie = prefix_trie_dict['ent_token_ids_in_trie']
         self.neg_candidate_mask = prefix_trie_dict['neg_candidate_mask']
+        self.mode = mode
 
     def __len__(self):
-        return len(self.train_triples) * 2
-
+        # return len(self.train_triples) * 2
+        return len(self.train_triples)
     def __getitem__(self, index):
-        train_triple = self.train_triples[index // 2]
-        mode = 'tail' if index % 2 == 0 else 'head'
+        # train_triple = self.train_triples[index // 2]
+        # mode = 'tail' if index % 2 == 0 else 'head'
+        train_triple = self.train_triples[index]
+        mode = self.mode
         if self.configs.temporal:
             head, tail, rel, time = train_triple
         else:
@@ -199,25 +202,40 @@ class DataModule(pl.LightningDataModule):
         self.ground_truth_dict = ground_truth_dict
 
         self.tokenizer = T5Tokenizer.from_pretrained(configs.pretrained_model)
-        self.train_both = None
+        # self.train_both = None
+        self.train_tail, self.train_head = None, None
         self.valid_tail, self.valid_head = None, None
         self.test_tail, self.test_head = None, None
 
     def prepare_data(self):
-        self.train_both = TrainDataset(self.configs, self.tokenizer, self.train_triples, self.name_list_dict, self.prefix_trie_dict, self.ground_truth_dict)
+        # self.train_both = TrainDataset(self.configs, self.tokenizer, self.train_triples, self.name_list_dict, self.prefix_trie_dict, self.ground_truth_dict)
+        self.train_tail = TrainDataset(self.configs, self.tokenizer, self.train_triples, self.name_list_dict,self.prefix_trie_dict, self.ground_truth_dict,'tail')
+        self.train_head = TrainDataset(self.configs, self.tokenizer, self.train_triples, self.name_list_dict,self.prefix_trie_dict, self.ground_truth_dict, 'head')
         self.valid_tail = TestDataset(self.configs, self.tokenizer, self.valid_triples, self.name_list_dict, self.prefix_trie_dict, self.ground_truth_dict, 'tail')
         self.valid_head = TestDataset(self.configs, self.tokenizer, self.valid_triples, self.name_list_dict, self.prefix_trie_dict, self.ground_truth_dict, 'head')
         self.test_tail = TestDataset(self.configs, self.tokenizer, self.test_triples, self.name_list_dict, self.prefix_trie_dict, self.ground_truth_dict, 'tail')
         self.test_head = TestDataset(self.configs, self.tokenizer, self.test_triples, self.name_list_dict, self.prefix_trie_dict, self.ground_truth_dict, 'head')
 
     def train_dataloader(self):
-        train_loader = DataLoader(self.train_both,
+        # train_loader = DataLoader(self.train_both,
+        #                           batch_size=self.configs.batch_size,
+        #                           shuffle=True,
+        #                           collate_fn=self.train_both.collate_fn,
+        #                           pin_memory=True,
+        #                           num_workers=self.configs.num_workers)
+        train_tail_loader = DataLoader(self.train_tail,
                                   batch_size=self.configs.batch_size,
                                   shuffle=True,
-                                  collate_fn=self.train_both.collate_fn,
+                                  collate_fn=self.train_tail.collate_fn,
                                   pin_memory=True,
                                   num_workers=self.configs.num_workers)
-        return train_loader
+        train_head_loader = DataLoader(self.train_head,
+                                  batch_size=self.configs.batch_size,
+                                  shuffle=True,
+                                  collate_fn=self.train_head.collate_fn,
+                                  pin_memory=True,
+                                  num_workers=self.configs.num_workers)
+        return [train_tail_loader, train_head_loader]
 
     def val_dataloader(self):
         valid_tail_loader = DataLoader(self.valid_tail,

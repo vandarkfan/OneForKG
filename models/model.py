@@ -19,10 +19,11 @@ class T5Finetuner(pl.LightningModule):
         self.train_head_ground_truth = ground_truth_dict['train_head_ground_truth']
         self.all_tail_ground_truth = ground_truth_dict['all_tail_ground_truth']
         self.all_head_ground_truth = ground_truth_dict['all_head_ground_truth']
-
+        self.relname2id = name_list_dict['relname2id']
+        self.entname2id = name_list_dict['entname2id']
         self.ent_name_list = name_list_dict['ent_name_list']
         self.rel_name_list = name_list_dict['rel_name_list']
-
+        self.lmbda = 0.1
         self.prefix_trie = prefix_trie_dict['prefix_trie']
         self.ent_token_ids_in_trie = prefix_trie_dict['ent_token_ids_in_trie']
         self.next_token_dict = prefix_trie_dict['next_token_dict']
@@ -30,11 +31,23 @@ class T5Finetuner(pl.LightningModule):
             self.ent_token_ids_in_trie_with_descrip = prefix_trie_dict['ent_token_ids_in_trie_with_descrip']
         self.T5ForConditionalGeneration = ModifiedT5ForConditionalGeneration.from_pretrained(configs.pretrained_model)
 
-        self.w = 0.5
-        self.prompt_dim = self.T5ForConditionalGeneration.model_dim
-        self.rel_embed = nn.Embedding(self.configs.n_rel * 2, self.prompt_dim)
-        self.ent_embed = nn.Embedding(self.configs.n_ent, self.prompt_dim)
-        self.regularizer = N3(0.1)
+        # self.prompt_dim = self.T5ForConditionalGeneration.model_dim
+        self.prompt_dim = 512
+        # padding_idx, vocab_size = configs.pad_token_id, configs.vocab_size
+        checkpoint = torch.load('/media/xyf/9C1050A4105086E4/KG/chatgpt_class/KG-S2S-main/complex_wn18rr512/t5_complex_model.tar')
+        # add = torch.zeros([2,self.prompt_dim])
+        # entity_embed = torch.concat((add, entity_embed), dim=0)
+        self.ent_embed = nn.Embedding.from_pretrained(checkpoint['ent_embed'])
+        self.ent_embed.weight.requires_grad = False
+        self.rel_embed = nn.Embedding.from_pretrained(checkpoint['rel_embed'])
+        self.rel_embed.weight.requires_grad = False
+        self.w = 0.01
+        # prompt_dim = self.T5ForConditionalGeneration.model_dim
+        # self.ent_embed = nn.Embedding(self.configs.n_ent, prompt_dim)
+        # self.rel_embed = nn.Embedding(self.configs.n_rel * 2, prompt_dim)
+        # self.ent_embed.weight.data *= 0.001
+        # self.rel_embed.weight.data *= 0.001
+
 
         if self.configs.use_soft_prompt:
             prompt_dim = self.T5ForConditionalGeneration.model_dim
@@ -51,6 +64,13 @@ class T5Finetuner(pl.LightningModule):
 
     def training_step(self, batched_data, batch_idx):
         # src_ids, src_mask: .shape: (batch_size, padded_seq_len)
+        loss_tail = self.training_step_dan(batched_data[0], batch_idx)
+        loss_head = self.training_step_dan(batched_data[1], batch_idx)
+        loss = (loss_tail + loss_head)/2
+
+        return {'loss': loss}
+
+    def training_step_dan(self, batched_data, batch_idx):
         src_ids = batched_data['source_ids']
         src_mask = batched_data['source_mask']
         # target_ids, target_mask, labels: .shape: (batch_size, padded_seq_len)
@@ -63,36 +83,11 @@ class T5Finetuner(pl.LightningModule):
         # ent_rel .shape: (batch_size, 2)
         ent_rel = batched_data['ent_rel']
         mode = batched_data['mode']
-        ent_ids, rel_ids = ent_rel[:, [0]], ent_rel[:, [1]]
-        target_entity = batched_data['target_ent']
-        target_entity = torch.tensor(target_entity)
-        to_score_entity = self.ent_embed.weight
-        to_score_entity = to_score_entity[:, :int(self.prompt_dim/2)], to_score_entity[:, int(self.prompt_dim/2):]
-        scores = torch.zeros([len(ent_ids),self.configs.n_ent])
-        for i in range(len(mode)):
-            if mode[i] == 'tail':
-                lhs = self.ent_embed(ent_ids[i])
-                rel = self.rel_embed(rel_ids[i])
-                # rhs = self.ent_embed(target_entity[i])
-                # rhs = torch.squeeze(rhs, dim=0)
-                lhs = lhs[:,:int(self.prompt_dim/2)], lhs[:,int(self.prompt_dim/2):]
-                rel = rel[:,:int(self.prompt_dim/2)], rel[:,int(self.prompt_dim/2):]
-                # rhs = rhs[:self.prompt_dim], rhs[self.prompt_dim:]
-                rhs_scores = (
-                        (lhs[0] * rel[0] - lhs[1] * rel[1]) @ to_score_entity[0].transpose(0, 1) +
-                        (lhs[0] * rel[1] + lhs[1] * rel[0]) @ to_score_entity[1].transpose(0, 1)
-                )
-                scores[i] = rhs_scores
-            else:
-                rhs = self.ent_embed(ent_ids[i])
-                rel = self.rel_embed(rel_ids[i] + self.configs.n_rel)
-                rhs = rhs[:,:int(self.prompt_dim/2)], rhs[:,int(self.prompt_dim/2):]
-                rel = rel[:,:int(self.prompt_dim/2)], rel[:,int(self.prompt_dim/2):]
-                lhs_scores = (
-                    (rel[0] * rhs[0] + rel[1] * rhs[1]) @ to_score_entity[0].transpose(0, 1) +
-                    (rel[0] * rhs[1] - rel[1] * rhs[0]) @ to_score_entity[1].transpose(0, 1)
-                )
-                scores[i] = lhs_scores
+        ent_ids, rel_ids = torch.squeeze(ent_rel[:, [0]]), torch.squeeze(ent_rel[:, [1]])
+        target_entity = torch.tensor(batched_data['target_ent'])
+        entity_id_embed = self.ent_embed(ent_ids)
+        # entity_id_embed = self.ent_embed(entity_id)
+        #
 
 
         if self.configs.use_soft_prompt:
@@ -100,7 +95,8 @@ class T5Finetuner(pl.LightningModule):
             input_index = batched_data['input_index']
             # soft_prompt_index .shape: (batch_size, 4)
             soft_prompt_index = batched_data['soft_prompt_index']
-            inputs_emb, input_mask = self.get_soft_prompt_input_embed(src_ids, src_mask, ent_rel, input_index, soft_prompt_index)
+            inputs_emb, input_mask = self.get_soft_prompt_input_embed(src_ids, src_mask, ent_rel, input_index,
+                                                                      soft_prompt_index)
 
         if self.configs.seq_dropout > 0.:
             if self.configs.use_soft_prompt:
@@ -129,20 +125,32 @@ class T5Finetuner(pl.LightningModule):
                 src_mask = src_mask * dropout
 
         if self.configs.use_soft_prompt:
-            output = self.T5ForConditionalGeneration(inputs_embeds=inputs_emb, attention_mask=input_mask, labels=labels, output_hidden_states=True)
+            output = self.T5ForConditionalGeneration(inputs_embeds=inputs_emb, attention_mask=input_mask, labels=labels,
+                                                     output_hidden_states=True)
         else:
-            output = self.T5ForConditionalGeneration(input_ids=src_ids, attention_mask=src_mask, labels=labels)
+            output = self.T5ForConditionalGeneration(input_ids=src_ids, attention_mask=src_mask, labels=labels,
+                                                     entity_id_embed=entity_id_embed)
         loss = torch.mean(output.loss)
-
-
-        factors = self.get_factor(self.ent_embed(ent_ids),self.rel_embed(rel_ids),self.ent_embed(target_entity.to(0)))
-        l_reg = self.regularizer.penalty(factors)
-        complex_f_loss = nn.CrossEntropyLoss(reduction='mean')
-        complex_loss = complex_f_loss(scores, target_entity)
-
-        loss = (1 - self.w) * loss + self.w * (complex_loss + l_reg)
+        # complex_predict = self.complex_s(mode=mode, ent_ids=ent_ids, rel_ids=rel_ids)
+        # factors = self.get_factor(self.ent_embed(ent_ids), self.rel_embed(rel_ids), self.ent_embed(target_entity.to(0)))
+        # l_reg = self.penalty(factors)
+        # complex_f_loss = nn.CrossEntropyLoss(reduction='mean')
+        # complex_loss = complex_f_loss(complex_predict.to(0), target_entity.to(0))
+        # loss = (1 - self.w) * loss + self.w * (complex_loss + l_reg)
         self.history['loss'].append(loss.detach().item())
-        return {'loss': loss}
+        return loss
+    def penalty(self, factors):
+        """
+
+        :param factors: tuple, (s, p, o), batch_size * rank
+        :return:
+        """
+        norm = 0
+        for f in factors:
+            norm += self.lmbda * torch.sum(
+                torch.abs(f) ** 3
+            )
+        return norm / factors[0].shape[0]
     def get_factor(self, lhs, rel, rhs):
         lhs = lhs[:, :int(self.prompt_dim/2)], lhs[:, int(self.prompt_dim/2):]
         rel = rel[:, :int(self.prompt_dim/2)], rel[:, int(self.prompt_dim/2):]
@@ -150,6 +158,34 @@ class T5Finetuner(pl.LightningModule):
         return (torch.sqrt(lhs[0] ** 2 + lhs[1] ** 2),
                 torch.sqrt(rel[0] ** 2 + rel[1] ** 2),
                 torch.sqrt(rhs[0] ** 2 + rhs[1] ** 2))
+
+    def complex_s(self, mode, ent_ids, rel_ids):
+        to_score_entity = self.ent_embed.weight
+        to_score_entity = to_score_entity[:, :int(self.prompt_dim/2)], to_score_entity[:, int(self.prompt_dim/2):]
+        if mode[0] == 'tail':
+            lhs = self.ent_embed(ent_ids)
+            rel = self.rel_embed(rel_ids)
+            # rhs = self.ent_embed(target_entity[i])
+            # rhs = torch.squeeze(rhs, dim=0)
+            lhs = lhs[:,:int(self.prompt_dim/2)], lhs[:,int(self.prompt_dim/2):]
+            rel = rel[:,:int(self.prompt_dim/2)], rel[:,int(self.prompt_dim/2):]
+            # rhs = rhs[:self.prompt_dim], rhs[self.prompt_dim:]
+            rhs_scores = (
+                    (lhs[0] * rel[0] - lhs[1] * rel[1]) @ to_score_entity[0].transpose(0, 1) +
+                    (lhs[0] * rel[1] + lhs[1] * rel[0]) @ to_score_entity[1].transpose(0, 1)
+            )
+            scores = rhs_scores
+        else:
+            rhs = self.ent_embed(ent_ids)
+            rel = self.rel_embed(rel_ids + self.configs.n_rel)
+            rhs = rhs[:,:int(self.prompt_dim/2)], rhs[:,int(self.prompt_dim/2):]
+            rel = rel[:,:int(self.prompt_dim/2)], rel[:,int(self.prompt_dim/2):]
+            lhs_scores = (
+                (rel[0] * rhs[0] + rel[1] * rhs[1]) @ to_score_entity[0].transpose(0, 1) +
+                (rel[0] * rhs[1] - rel[1] * rhs[0]) @ to_score_entity[1].transpose(0, 1)
+            )
+            scores = lhs_scores
+        return scores
     def validation_step(self, batched_data, batch_idx, dataset_idx):
         if self.current_epoch < self.configs.skip_n_val_epoch:
             return
@@ -163,8 +199,11 @@ class T5Finetuner(pl.LightningModule):
         self.test_triple = batched_data['test_triple']
         # ent_rel: .shape: (batch_size, 2)
         self.ent_rel = batched_data['ent_rel']
+        target_entity = torch.tensor(batched_data['target_ent'])
         mode = batched_data['mode']
         self.dataset_idx = dataset_idx
+        ent_ids, rel_ids = torch.squeeze(self.ent_rel[:, [0]]), torch.squeeze(self.ent_rel[:, [1]])
+        entity_id_embed = self.ent_embed(ent_ids)
         if dataset_idx == 0:
             self.all_ground_truth = self.all_tail_ground_truth
             self.train_ground_truth = self.train_tail_ground_truth
@@ -173,20 +212,47 @@ class T5Finetuner(pl.LightningModule):
             self.train_ground_truth = self.train_head_ground_truth
 
         # generated_text .type: list(str) .len: batch_size * num_beams
-        generated_text, scores_t5 = self.decode(src_ids, src_mask, batched_data)
+        generated_text, scores_t5 = self.decode(src_ids, src_mask, batched_data, entity_id_embed)
         group_text = [generated_text[i:i + self.configs.num_beams] for i in range(0, len(generated_text), self.configs.num_beams)]
-        scores_t5 = [scores_t5[i:i + self.configs.num_beams] for i in range(0, len(scores_t5), self.configs.num_beams)]
 
+
+        scores_t5 = scores_t5.contiguous().view(-1, self.configs.num_beams)
+        scores_t5 = torch.softmax(scores_t5, dim=1)
+        # generated_id = self.entname2id[generated_text]#320个id编号
+        generated_id = -1 * torch.ones([len(generated_text)])
+        for i in range(len(generated_text)):
+            if generated_text[i] in self.entname2id.keys():
+                generated_id[i] = self.entname2id[generated_text[i]]
+        generated_id = generated_id.contiguous().view(-1, self.configs.num_beams)
+        scores_complex = self.complex_s(mode = mode, ent_ids = ent_ids, rel_ids = rel_ids)
+        scores_complex2t5 = -1 * torch.ones([generated_id.shape[0], generated_id.shape[1]])
+        for i in range(generated_id.shape[0]):
+            for j in range(generated_id.shape[1]):
+                if generated_id[i,j]!=-1:
+                    scores_complex2t5[i,j] = scores_complex[i, int(generated_id[i,j])]#[8,40]里面不对劲的玩意都变成-10000了，有数字的可能在-7~7之间
+                else:
+                    scores_complex2t5[i, j] = -10000
+        scores_complex2t5 = torch.softmax(scores_complex2t5, dim=1)
+        scores = (1 - self.w) * scores_t5 + self.w * scores_complex2t5.to(0)
+        sorted_scores, indices = torch.sort(scores, descending=True, dim=-1)
+        sorted_group_text = []
+
+
+        for i in range(len(group_text)):
+            sorted_group_text_dan = []
+            for j in range(self.configs.num_beams):
+                sorted_group_text_dan.append(group_text[i][indices[i,j]])
+            sorted_group_text.append(sorted_group_text_dan)
+        group_text = sorted_group_text
         if self.configs.log_text:
             self.log_generation(group_text, src_names, target_names, batch_idx, dataset_idx)
-
         ranks = []
         for i, texts in enumerate(group_text):
             if self.configs.temporal:
                 hr_key = (self.test_triple[i][dataset_idx], self.test_triple[i][2], self.test_triple[i][3])
             else:
                 hr_key = (self.test_triple[i][dataset_idx], self.test_triple[i][2])
-            all_gt_ids = self.all_ground_truth[hr_key]
+            all_gt_ids = self.all_ground_truth[hr_key]#list里面是这个实体应该过滤的id
             all_gt_seqs = [self.ent_name_list[ids] for ids in all_gt_ids]
 
             ## get rank
@@ -206,7 +272,7 @@ class T5Finetuner(pl.LightningModule):
         out = {'ranks': ranks}
         return out
 
-    def decode(self, src_ids, src_mask, batched_data):
+    def decode(self, src_ids, src_mask, batched_data, entity_id_embed):
         def _extract(generated_text):
             if self.configs.tgt_descrip_max_length > 0:
                 compiler = re.compile(r'<extra_id_0>(.*?)\[')
@@ -286,7 +352,9 @@ class T5Finetuner(pl.LightningModule):
                                                                    num_beam_groups=num_beam_groups,
                                                                    prefix_allowed_tokens_fn=prefix_allowed_tokens_fn,
                                                                    num_beams=self.configs.num_beams,
-                                                                   output_scores=True)
+                                                                   output_scores=True,
+                                                                   entity_id_embed=entity_id_embed,
+                                                                   )
             raw_generated_text = self.trainer.datamodule.tokenizer.batch_decode(outputs.sequences)
             generated_text = _extract(raw_generated_text)#320个，实体text
             # print(outputs.sequences_scores)

@@ -40,12 +40,25 @@ def main():
         prefix_trie = construct_prefix_trie(ent_token_ids_in_trie)
         neg_candidate_mask, next_token_dict = get_next_token_dict(configs, ent_token_ids_in_trie, prefix_trie)
     ent_name_list = tokenizer.batch_decode([tokens[1:-2] for tokens in ent_token_ids_in_trie])
+
+    entname2id = dict()
+    relname2id = dict()
+    count = 0
+    for val in ent_name_list:
+        entname2id[val] = count
+        count+=1
+    count = 0
+    for val in rel_name_list:
+        relname2id[val] = count
+        count+=1
     name_list_dict = {
         'original_ent_name_list': original_ent_name_list,
         'ent_name_list': ent_name_list,
         'rel_name_list': rel_name_list,
         'src_description_list': src_description_list,
-        'tgt_description_list': tgt_description_list
+        'tgt_description_list': tgt_description_list,
+        'entname2id': entname2id,
+        'relname2id': relname2id
     }
 
     prefix_trie_dict = {
@@ -87,7 +100,7 @@ def main():
         'checkpoint_callback': True,  # True
         'logger': False,  # TensorBoardLogger
         'num_sanity_val_steps': 0,  # 2
-        'check_val_every_n_epoch': 3,
+        'check_val_every_n_epoch': 5,
         'enable_progress_bar': True,
         'callbacks': [
             checkpoint_callback,
@@ -125,7 +138,7 @@ if __name__ == '__main__':
     parser.add_argument('-num_workers', type=int, default=4, help='Number of processes to construct batches')
     parser.add_argument('-save_dir', type=str, default='', help='')
 
-    parser.add_argument('-pretrained_model', type=str, default='t5-small', help='')
+    parser.add_argument('-pretrained_model', type=str, default='t5-base', help='')
     parser.add_argument('-batch_size', default=64, type=int, help='Batch size')
     parser.add_argument('-val_batch_size', default=8, type=int, help='Batch size')
     parser.add_argument('-num_beams', default=40, type=int, help='Number of samples from beam search')

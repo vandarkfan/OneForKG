@@ -210,6 +210,7 @@ class ModifiedT5ForConditionalGeneration(T5PreTrainedModel):
         output_attentions=None,
         output_hidden_states=None,
         return_dict=None,
+        entity_id_embed=None,
     ):
 
         use_cache = use_cache if use_cache is not None else self.config.use_cache
@@ -232,6 +233,7 @@ class ModifiedT5ForConditionalGeneration(T5PreTrainedModel):
                 output_attentions=output_attentions,
                 output_hidden_states=output_hidden_states,
                 return_dict=return_dict,
+                entity_id_embed=entity_id_embed
             )
         elif return_dict and not isinstance(encoder_outputs, BaseModelOutput):
             encoder_outputs = BaseModelOutput(
@@ -274,6 +276,7 @@ class ModifiedT5ForConditionalGeneration(T5PreTrainedModel):
             output_attentions=output_attentions,
             output_hidden_states=output_hidden_states,
             return_dict=return_dict,
+            entity_id_embed=entity_id_embed
         )
 
         sequence_output = decoder_outputs[0]
