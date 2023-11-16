@@ -334,13 +334,13 @@ class T5Attention(nn.Module):
             self.v = nn.Linear(self.d_model, self.inner_dim, bias=False)
             self.o = nn.Linear(self.inner_dim, self.d_model, bias=False)
         else:
-            self.q = nn.Linear(self.d_model, int(self.inner_dim ), bias=True)
-            self.k = nn.Linear(self.d_model, int(self.inner_dim ), bias=True)
-            self.v = nn.Linear(self.d_model, int(self.inner_dim ), bias=True)
-            self.o = nn.Linear(self.inner_dim, self.d_model, bias=True)
-            self.e = nn.Linear(self.d_model, int(self.inner_dim ), bias=True)
-            self.conv1D = nn.Conv1d(self.d_model, self.d_model, kernel_size = 2 , stride = 1, bias=True, padding=1)
-            self.deconv1D = nn.ConvTranspose1d(self.d_model, self.d_model, kernel_size = 2, stride = 1, bias = True)
+            self.q = nn.Linear(self.d_model, int(self.inner_dim ), bias=False)
+            self.k = nn.Linear(self.d_model, int(self.inner_dim ), bias=False)
+            self.v = nn.Linear(self.d_model, int(self.inner_dim ), bias=False)
+            self.o = nn.Linear(self.inner_dim, self.d_model, bias=False)
+            self.e = nn.Linear(self.d_model, int(self.inner_dim ), bias=False)
+            # self.conv1D = nn.Conv1d(self.d_model, self.d_model, kernel_size = 2 , stride = 1, bias=True, padding=1)
+            # self.deconv1D = nn.ConvTranspose1d(self.d_model, self.d_model, kernel_size = 2, stride = 1, bias = True)
 
         if self.has_relative_attention_bias:
             self.relative_attention_bias = nn.Embedding(self.relative_attention_num_buckets, self.n_heads)
@@ -505,12 +505,14 @@ class T5Attention(nn.Module):
         if self.is_decoder == False:
             # hidden_states = self.conv1D(hidden_states.transpose(1,2))[:,:,:seq_length].transpose(1,2)
             query_states = self.q(hidden_states)
-            key_states = self.k(hidden_states)#[64,63,256]
-            value_states = self.v(hidden_states)#[64,63,256]
+            key_states = self.k(hidden_states)#[64,63,512]
+            value_states = self.v(hidden_states)#[64,63,512]
             # entity_id_embed = self.e(entity_id_embed)
             # query_states = shape(torch.cat([query_states, entity_id_embed],dim=1))
             # key_states = shape(torch.cat([key_states, entity_id_embed],dim=1))
             # value_states = shape(torch.cat([value_states, entity_id_embed],dim=1))
+            # 进入的entity_id_embed给他调成[64,4,768]这个4是关系和实体的嵌入，都是复数嵌入
+
             query_states = shape(query_states)
             key_states = shape(key_states)
             value_states = shape(value_states)
@@ -540,8 +542,11 @@ class T5Attention(nn.Module):
                 if self.gradient_checkpointing and self.training:
                     position_bias.requires_grad = True
             else:
-                position_bias = self.compute_bias(real_seq_length , key_length)#根据序列长度来搞了个[1,8,63,63]
-
+                position_bias = self.compute_bias(real_seq_length, key_length)  # 根据序列长度来搞了个[1,8,63,63]
+                # if self.is_decoder:
+                #     position_bias = self.compute_bias(real_seq_length , key_length)#根据序列长度来搞了个[1,8,63,63]
+                # else:
+                #     position_bias = self.compute_bias(real_seq_length, key_length + 4)
             # if key and values are already calculated
             # we want only the last query position bias
             if past_key_value is not None:
@@ -549,6 +554,12 @@ class T5Attention(nn.Module):
 
             if mask is not None:
                 position_bias = position_bias + mask  # (batch_size, n_heads, seq_length, key_length)
+                # if self.is_decoder:
+                #     position_bias = position_bias + mask  # (batch_size, n_heads, seq_length, key_length)
+                # else:
+                #     addmask = torch.zeros([batch_size, 1, 1, 4])
+                #     mask = torch.cat((addmask, mask), dim=-1)
+                #     position_bias = position_bias + mask  # (batch_size, n_heads, seq_length, key_length)
                 #encoder和decoder只进一次
         scores += position_bias
         attn_weights = nn.functional.softmax(scores.float(), dim=-1).type_as(

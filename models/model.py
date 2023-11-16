@@ -32,16 +32,14 @@ class T5Finetuner(pl.LightningModule):
         self.T5ForConditionalGeneration = ModifiedT5ForConditionalGeneration.from_pretrained(configs.pretrained_model)
 
         # self.prompt_dim = self.T5ForConditionalGeneration.model_dim
-        self.prompt_dim = 512
         # padding_idx, vocab_size = configs.pad_token_id, configs.vocab_size
         checkpoint = torch.load('/media/xyf/9C1050A4105086E4/KG/chatgpt_class/KG-S2S-main/complex_wn18rr512/t5_complex_model.tar')
-        # add = torch.zeros([2,self.prompt_dim])
-        # entity_embed = torch.concat((add, entity_embed), dim=0)
         self.ent_embed = nn.Embedding.from_pretrained(checkpoint['ent_embed'])
         self.ent_embed.weight.requires_grad = False
         self.rel_embed = nn.Embedding.from_pretrained(checkpoint['rel_embed'])
         self.rel_embed.weight.requires_grad = False
         self.w = 0.01
+        self.prompt_dim = checkpoint['rel_embed'].shape[-1]
         # prompt_dim = self.T5ForConditionalGeneration.model_dim
         # self.ent_embed = nn.Embedding(self.configs.n_ent, prompt_dim)
         # self.rel_embed = nn.Embedding(self.configs.n_rel * 2, prompt_dim)

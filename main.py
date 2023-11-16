@@ -19,7 +19,7 @@ def main():
     valid_triples = read(configs, configs.dataset_path, configs.dataset, 'valid2id.txt')
     test_triples = read(configs, configs.dataset_path, configs.dataset, 'test2id.txt')
     all_triples = train_triples + valid_triples + test_triples
-
+    # checkpoint111 = torch.load(configs.model_path)
     ## construct name list
     original_ent_name_list, rel_name_list = read_name(configs, configs.dataset_path, configs.dataset)
     tokenizer = T5Tokenizer.from_pretrained(configs.pretrained_model)
