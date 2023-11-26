@@ -54,6 +54,7 @@ class TrainDataset(Dataset):
                 src = '<extra_id_0>' + ' | ' + rel_name + ' | ' + tail_name + ' ' + tail_descrip
             tgt = '<extra_id_0>' + head_name + head_target_descrip + '<extra_id_1>'
 
+
         tokenized_src = self.tokenizer(src, max_length=self.configs.src_max_length, truncation=True)
         source_ids = tokenized_src.input_ids
         source_mask = tokenized_src.attention_mask
@@ -66,6 +67,24 @@ class TrainDataset(Dataset):
         if mode == 'head':
             target_ent = torch.tensor(head)
         ent_rel = torch.LongTensor([head, rel]) if mode == 'tail' else torch.LongTensor([tail, rel])
+
+        if self.configs.temporal:
+            sep1, sep2, sep3 = [ids for ids in range(len(source_ids)) if source_ids[ids] == 1820]
+            # if mode == 'tail':
+            #     input_index = [0] + list(range(0, sep1)) + [0] + [sep1] + [0] + list(range(sep1 + 1, sep2)) + [
+            #         0] + list(range(sep2, len(source_ids)))
+            #     soft_prompt_index = torch.LongTensor([0, sep1 + 1, sep1 + 3, sep2 + 3])
+            # elif mode == 'head':
+            #     input_index = list(range(0, sep1 + 1)) + [0] + list(range(sep1 + 1, sep2)) + [0, sep2, 0] + list(
+            #         range(sep2 + 1, sep3)) + [0] + list(range(sep3, len(source_ids)))
+            #     soft_prompt_index = torch.LongTensor([sep2 + 3, sep3 + 3, sep1 + 1, sep2 + 1])
+        else:
+            sep1, sep2 = [ids for ids in range(len(source_ids)) if source_ids[ids] == 1820]
+            sep3 = -1
+            if mode == 'head':
+                sep3 = len(source_ids)
+        sep = torch.LongTensor([sep1, sep2, sep3])
+
         out = {
                 'source_ids': source_ids,
                 'source_mask': source_mask,
@@ -75,6 +94,7 @@ class TrainDataset(Dataset):
                 'ent_rel': ent_rel,
                 'mode':mode,
                 'target_ent': target_ent,
+                'sep': sep,
         }
 
         if self.configs.use_soft_prompt:
@@ -94,6 +114,7 @@ class TrainDataset(Dataset):
         agg_data['ent_rel'] = batchify(data, 'ent_rel')
         agg_data['mode'] = [out['mode'] for out in data]
         agg_data['target_ent'] = [out['target_ent'] for out in data]
+        agg_data['sep'] = [out['sep'] for out in data]
         if self.configs.use_soft_prompt:
             agg_data['input_index'] = batchify(data, 'input_index', padding_value=0)
             agg_data['soft_prompt_index'] = batchify(data, 'soft_prompt_index')
@@ -157,6 +178,23 @@ class TestDataset(Dataset):
             target_ent = torch.tensor(tail)
         if self.mode == 'head':
             target_ent = torch.tensor(head)
+
+        if self.configs.temporal:
+            sep1, sep2, sep3 = [ids for ids in range(len(source_ids)) if source_ids[ids] == 1820]
+            # if mode == 'tail':
+            #     input_index = [0] + list(range(0, sep1)) + [0] + [sep1] + [0] + list(range(sep1 + 1, sep2)) + [
+            #         0] + list(range(sep2, len(source_ids)))
+            #     soft_prompt_index = torch.LongTensor([0, sep1 + 1, sep1 + 3, sep2 + 3])
+            # elif mode == 'head':
+            #     input_index = list(range(0, sep1 + 1)) + [0] + list(range(sep1 + 1, sep2)) + [0, sep2, 0] + list(
+            #         range(sep2 + 1, sep3)) + [0] + list(range(sep3, len(source_ids)))
+            #     soft_prompt_index = torch.LongTensor([sep2 + 3, sep3 + 3, sep1 + 1, sep2 + 1])
+        else:
+            sep1, sep2 = [ids for ids in range(len(source_ids)) if source_ids[ids] == 1820]
+            sep3 = -1
+            if self.mode == 'head':
+                sep3 = len(source_ids)
+        sep = torch.LongTensor([sep1, sep2, sep3])
         out = {
             'source_ids': source_ids,
             'source_mask': source_mask,
@@ -166,6 +204,7 @@ class TestDataset(Dataset):
             'ent_rel': ent_rel,
             'mode': self.mode,
             'target_ent': target_ent,
+            'sep': sep,
         }
         if self.configs.use_soft_prompt:
             input_index, soft_prompt_index, _ = get_soft_prompt_pos(self.configs, source_ids, None, self.mode)
@@ -183,6 +222,7 @@ class TestDataset(Dataset):
         agg_data['ent_rel'] = batchify(data, 'ent_rel')
         agg_data['mode'] = [out['mode'] for out in data]
         agg_data['target_ent'] = [out['target_ent'] for out in data]
+        agg_data['sep'] = [out['sep'] for out in data]
         if self.configs.use_soft_prompt:
             agg_data['input_index'] = batchify(data, 'input_index', padding_value=0)
             agg_data['soft_prompt_index'] = batchify(data, 'soft_prompt_index')

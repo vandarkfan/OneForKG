@@ -315,14 +315,12 @@ class T5Attention(nn.Module):
         super().__init__()
         self.is_decoder = config.is_decoder
         self.has_relative_attention_bias = has_relative_attention_bias
-
         self.relative_attention_num_buckets = config.relative_attention_num_buckets
         self.d_model = config.d_model
         self.key_value_proj_dim = config.d_kv
         self.n_heads = config.num_heads
         self.dropout = config.dropout_rate
         self.inner_dim = self.n_heads * self.key_value_proj_dim
-
         # Mesh TensorFlow initialization to avoid scaling before softmax
         # self.q = nn.Linear(self.d_model, self.inner_dim, bias=False)
         # self.k = nn.Linear(self.d_model, self.inner_dim, bias=False)
@@ -338,7 +336,7 @@ class T5Attention(nn.Module):
             self.k = nn.Linear(self.d_model, int(self.inner_dim ), bias=False)
             self.v = nn.Linear(self.d_model, int(self.inner_dim ), bias=False)
             self.o = nn.Linear(self.inner_dim, self.d_model, bias=False)
-            self.e = nn.Linear(self.d_model, int(self.inner_dim ), bias=False)
+            self.e = nn.Linear(self.d_model, int(self.inner_dim), bias=False)
             # self.conv1D = nn.Conv1d(self.d_model, self.d_model, kernel_size = 2 , stride = 1, bias=True, padding=1)
             # self.deconv1D = nn.ConvTranspose1d(self.d_model, self.d_model, kernel_size = 2, stride = 1, bias = True)
 
@@ -422,11 +420,11 @@ class T5Attention(nn.Module):
         relative_position = memory_position - context_position  # shape (query_length, key_length)
         relative_position_bucket = self._relative_position_bucket(
             relative_position,  # shape (query_length, key_length)
-            bidirectional=(not self.is_decoder),
-            num_buckets=self.relative_attention_num_buckets,
-        )
-        values = self.relative_attention_bias(relative_position_bucket)  # shape (query_length, key_length, num_heads)
-        values = values.permute([2, 0, 1]).unsqueeze(0)  # shape (1, num_heads, query_length, key_length)
+            bidirectional=(not self.is_decoder),#encoder是ture，
+            num_buckets=self.relative_attention_num_buckets,#32
+        )#71,71
+        values = self.relative_attention_bias(relative_position_bucket)  #71,71,12 shape (query_length, key_length, num_heads)
+        values = values.permute([2, 0, 1]).unsqueeze(0)  # shape (1, num_heads, query_length, key_length)  1,12,71,71
         return values
 
     def forward(
@@ -463,7 +461,7 @@ class T5Attention(nn.Module):
 
         def shape(states):
             """projection"""
-            return states.view(batch_size, -1, self.n_heads, self.key_value_proj_dim).transpose(1, 2)
+            return states.contiguous().view(batch_size, -1, self.n_heads, self.key_value_proj_dim).transpose(1, 2)
 
         def unshape(states):
             """reshape"""
@@ -504,14 +502,10 @@ class T5Attention(nn.Module):
         # )
         if self.is_decoder == False:
             # hidden_states = self.conv1D(hidden_states.transpose(1,2))[:,:,:seq_length].transpose(1,2)
+
             query_states = self.q(hidden_states)
             key_states = self.k(hidden_states)#[64,63,512]
             value_states = self.v(hidden_states)#[64,63,512]
-            # entity_id_embed = self.e(entity_id_embed)
-            # query_states = shape(torch.cat([query_states, entity_id_embed],dim=1))
-            # key_states = shape(torch.cat([key_states, entity_id_embed],dim=1))
-            # value_states = shape(torch.cat([value_states, entity_id_embed],dim=1))
-            # 进入的entity_id_embed给他调成[64,4,768]这个4是关系和实体的嵌入，都是复数嵌入
 
             query_states = shape(query_states)
             key_states = shape(key_states)
@@ -546,7 +540,7 @@ class T5Attention(nn.Module):
                 # if self.is_decoder:
                 #     position_bias = self.compute_bias(real_seq_length , key_length)#根据序列长度来搞了个[1,8,63,63]
                 # else:
-                #     position_bias = self.compute_bias(real_seq_length, key_length + 4)
+                #     position_bias = self.compute_bias(real_seq_length + 4, key_length + 4)
             # if key and values are already calculated
             # we want only the last query position bias
             if past_key_value is not None:
@@ -557,7 +551,7 @@ class T5Attention(nn.Module):
                 # if self.is_decoder:
                 #     position_bias = position_bias + mask  # (batch_size, n_heads, seq_length, key_length)
                 # else:
-                #     addmask = torch.zeros([batch_size, 1, 1, 4])
+                #     addmask = torch.zeros([batch_size, 1, 1, 4]).to(0)
                 #     mask = torch.cat((addmask, mask), dim=-1)
                 #     position_bias = position_bias + mask  # (batch_size, n_heads, seq_length, key_length)
                 #encoder和decoder只进一次
@@ -575,7 +569,8 @@ class T5Attention(nn.Module):
 
         attn_output = unshape(torch.matmul(attn_weights, value_states))  # (batch_size, seq_length, dim)
         attn_output = self.o(attn_output)
-
+        # if self.is_decoder == False:
+        #     attn_output = attn_output[:,4:,:]
         present_key_value_state = (key_states, value_states) if (self.is_decoder and use_cache) else None
         outputs = (attn_output,) + (present_key_value_state,) + (position_bias,)
 
@@ -972,10 +967,22 @@ class T5Stack(T5PreTrainedModel):
 
         if inputs_embeds is None:
             assert self.embed_tokens is not None, "You have to initialize the model with valid token embeddings"
-            inputs_embeds = self.embed_tokens(input_ids)
+            # if self.is_decoder == False:
+            #     inputs_embeds = self.embed_tokens(input_ids)
+            #     entity_id_embed = entity_id_embed.reshape(input_shape[0], 4, inputs_embeds.shape[-1])
+            #     inputs_embeds = torch.cat([entity_id_embed, inputs_embeds], dim=1)
+            # else:
+            #     inputs_embeds = self.embed_tokens(input_ids)
+            if self.is_decoder == False:
+                inputs_embeds = self.embed_tokens(input_ids)
+                inputs_embeds = inputs_embeds + entity_id_embed.to(0)
+            else:
+                inputs_embeds = self.embed_tokens(input_ids)
+            # inputs_embeds = self.embed_tokens(input_ids)
 
         batch_size, seq_length = input_shape
-
+        # if self.is_decoder == False:
+        #     seq_length = seq_length + 4
         # required mask seq length can be calculated via length of past
         mask_seq_length = past_key_values[0][0].shape[2] + seq_length if past_key_values is not None else seq_length
 
@@ -997,7 +1004,7 @@ class T5Stack(T5PreTrainedModel):
 
         # We can provide a self-attention mask of dimensions [batch_size, from_seq_length, to_seq_length]
         # ourselves in which case we just need to make it broadcastable to all heads.
-        extended_attention_mask = self.get_extended_attention_mask(attention_mask, input_shape, inputs_embeds.device)
+        extended_attention_mask = self.get_extended_attention_mask(attention_mask, (batch_size, seq_length), inputs_embeds.device)
         #encoder进去变成0和-10000，[64,59]-->[64,1,1,59],decoder,[64,29]-->[64,1,29,29]
 
         # If a 2D or 3D attention mask is provided for the cross-attention

@@ -293,7 +293,6 @@ class ModifiedT5ForConditionalGeneration(T5PreTrainedModel):
             sequence_output = sequence_output * (self.model_dim ** -0.5)
 
         lm_logits = self.lm_head(sequence_output)
-
         loss = None
         if labels is not None:
             ## The scripts in between is the modification we conduct from the original T5 model (version 4.2.2)
@@ -314,6 +313,7 @@ class ModifiedT5ForConditionalGeneration(T5PreTrainedModel):
             decoder_attentions=decoder_outputs.attentions,
             cross_attentions=decoder_outputs.cross_attentions,
             encoder_last_hidden_state=encoder_outputs.last_hidden_state,
+            # encoder_last_hidden_state=encoder_outputs[0],
             encoder_hidden_states=encoder_outputs.hidden_states,
             encoder_attentions=encoder_outputs.attentions,
         )
