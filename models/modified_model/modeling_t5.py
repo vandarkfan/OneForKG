@@ -40,7 +40,7 @@ from transformers.modeling_outputs import (
     Seq2SeqLMOutput,
     Seq2SeqModelOutput,
 )
-from transformers.modeling_utils import PreTrainedModel, find_pruneable_heads_and_indices, prune_linear_layer
+from .modeling_utils import PreTrainedModel, find_pruneable_heads_and_indices, prune_linear_layer
 from transformers.utils import logging
 from transformers.utils.model_parallel_utils import assert_device_map, get_device_map
 from transformers.models.t5.configuration_t5 import T5Config
@@ -975,7 +975,7 @@ class T5Stack(T5PreTrainedModel):
             #     inputs_embeds = self.embed_tokens(input_ids)
             if self.is_decoder == False:
                 inputs_embeds = self.embed_tokens(input_ids)
-                inputs_embeds = inputs_embeds + entity_id_embed.to(0)
+                inputs_embeds = 0.7 * inputs_embeds + 0.3 * entity_id_embed.to(inputs_embeds.device)
             else:
                 inputs_embeds = self.embed_tokens(input_ids)
             # inputs_embeds = self.embed_tokens(input_ids)

@@ -4,8 +4,8 @@ import torch
 from torch import nn
 from torch.nn import CrossEntropyLoss
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union
-
-
+import inspect
+import torch.distributed as dist
 from dataclasses import dataclass
 from transformers.file_utils import ModelOutput
 from transformers.modeling_outputs import (
@@ -14,10 +14,7 @@ from transformers.modeling_outputs import (
 )
 from transformers.utils import logging
 from transformers.utils.model_parallel_utils import assert_device_map, get_device_map
-# from transformers.models.t5.modeling_t5 import T5PreTrainedModel, T5Stack
 from .modeling_t5 import T5PreTrainedModel, T5Stack
-# from transformers.generation_beam_search import BeamScorer, BeamSearchScorer
-# from transformers.generation_logits_process import LogitsProcessorList
 
 logger = logging.get_logger(__name__)
 

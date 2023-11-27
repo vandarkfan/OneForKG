@@ -31,7 +31,8 @@ class T5Finetuner(pl.LightningModule):
             self.ent_token_ids_in_trie_with_descrip = prefix_trie_dict['ent_token_ids_in_trie_with_descrip']
         self.T5ForConditionalGeneration = ModifiedT5ForConditionalGeneration.from_pretrained(configs.pretrained_model)
 
-        checkpoint = torch.load('/media/xyf/9C1050A4105086E4/KG/chatgpt_class/KG-S2S-main/complex_wn18rr1536/t5_complex_model.tar')
+        # checkpoint = torch.load('/media/xyf/9C1050A4105086E4/KG/chatgpt_class/KG-S2S-main/complex_wn18rr1536/t5_complex_model.tar')
+        checkpoint = torch.load('./complex_wn18rr1536/t5_complex_model.tar')
         self.ent_embed = nn.Embedding.from_pretrained(checkpoint['ent_embed'])
         self.ent_embed.weight.requires_grad = False
         self.rel_embed = nn.Embedding.from_pretrained(checkpoint['rel_embed'])
@@ -284,33 +285,33 @@ class T5Finetuner(pl.LightningModule):
         group_text = [generated_text[i:i + self.configs.num_beams] for i in range(0, len(generated_text), self.configs.num_beams)]
 
 
-        scores_t5 = scores_t5.contiguous().view(-1, self.configs.num_beams)
-        scores_t5 = torch.softmax(scores_t5, dim=1)
-        generated_id = -1 * torch.ones([len(generated_text)])
-        for i in range(len(generated_text)):
-            if generated_text[i] in self.entname2id.keys():
-                generated_id[i] = self.entname2id[generated_text[i]]
-        generated_id = generated_id.contiguous().view(-1, self.configs.num_beams)
-        scores_complex = self.complex_s(mode = mode, ent_ids = ent_ids, rel_ids = rel_ids)
-        scores_complex2t5 = -1 * torch.ones([generated_id.shape[0], generated_id.shape[1]])
-        for i in range(generated_id.shape[0]):
-            for j in range(generated_id.shape[1]):
-                if generated_id[i,j]!=-1:
-                    scores_complex2t5[i,j] = scores_complex[i, int(generated_id[i,j])]#[8,40]里面不对劲的玩意都变成-10000了，有数字的可能在-7~7之间
-                else:
-                    scores_complex2t5[i, j] = -10000
-        scores_complex2t5 = torch.softmax(scores_complex2t5, dim=1)
-        scores = (1 - self.w) * scores_t5 + self.w * scores_complex2t5.to(0)
-        sorted_scores, indices = torch.sort(scores, descending=True, dim=-1)
-        sorted_group_text = []
-
-
-        for i in range(len(group_text)):
-            sorted_group_text_dan = []
-            for j in range(self.configs.num_beams):
-                sorted_group_text_dan.append(group_text[i][indices[i,j]])
-            sorted_group_text.append(sorted_group_text_dan)
-        group_text = sorted_group_text
+        # scores_t5 = scores_t5.contiguous().view(-1, self.configs.num_beams)
+        # scores_t5 = torch.softmax(scores_t5, dim=1)
+        # generated_id = -1 * torch.ones([len(generated_text)])
+        # for i in range(len(generated_text)):
+        #     if generated_text[i] in self.entname2id.keys():
+        #         generated_id[i] = self.entname2id[generated_text[i]]
+        # generated_id = generated_id.contiguous().view(-1, self.configs.num_beams)
+        # scores_complex = self.complex_s(mode = mode, ent_ids = ent_ids, rel_ids = rel_ids)
+        # scores_complex2t5 = -1 * torch.ones([generated_id.shape[0], generated_id.shape[1]])
+        # for i in range(generated_id.shape[0]):
+        #     for j in range(generated_id.shape[1]):
+        #         if generated_id[i,j]!=-1:
+        #             scores_complex2t5[i,j] = scores_complex[i, int(generated_id[i,j])]#[8,40]里面不对劲的玩意都变成-10000了，有数字的可能在-7~7之间
+        #         else:
+        #             scores_complex2t5[i, j] = -10000
+        # scores_complex2t5 = torch.softmax(scores_complex2t5, dim=1)
+        # scores = (1 - self.w) * scores_t5 + self.w * scores_complex2t5.to(0)
+        # sorted_scores, indices = torch.sort(scores, descending=True, dim=-1)
+        # sorted_group_text = []
+        #
+        #
+        # for i in range(len(group_text)):
+        #     sorted_group_text_dan = []
+        #     for j in range(self.configs.num_beams):
+        #         sorted_group_text_dan.append(group_text[i][indices[i,j]])
+        #     sorted_group_text.append(sorted_group_text_dan)
+        # group_text = sorted_group_text
 
 
         if self.configs.log_text:
