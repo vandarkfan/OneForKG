@@ -99,7 +99,7 @@ The results are:
                   -use_rel_prompt_emb \
                   -num_beams 40 \
                   -eval_tgt_max_length 30 \
-                  -model_path path/to/trained/model \
+                  -model_path path/to/trained/model \checkpoint/WN18RR-2023-12-09/WN18RR-epoch=014-loss=193.8615.ckpt
                   -use_prefix_search  
   ```
   ##### FB15k-237
@@ -234,7 +234,7 @@ head ranking  0.472063  8128.717932  43.84%  48.44%  53.54%
 mean ranking  0.577252  5670.702936  53.35%  59.89%  65.95%
 这个是lost相加之后的结果,wn18rr,w=0.1,base
 tail ranking  0.620664  3074.332163  52.49%  69.11%  79.36%
-head ranking  0.471732  8128.870453  42.88%  49.52%  55.78%
+head ranking  0.471732  8128.870453  42.88%  49.52%  55.78% 
 mean ranking  0.546198  5601.601308  47.69%  59.32%  67.57%
 这个是lost相加之后的结果,fb15k-237,w=0.01,small
 tail ranking  0.435373  2529.593130  36.02%  47.84%  58.43%

@@ -9,7 +9,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from transformers import T5Tokenizer
 from transformers import T5Config
 from models.model import T5Finetuner
-from data import DataModule
+from data import DataModule,PretrainDataModule
 from helper import get_num, read, read_name, read_file, get_ground_truth, get_next_token_dict, construct_prefix_trie, get_neighbor_truth
 from callbacks import PrintingCallback
 os.environ['CURL_CA_BUNDLE'] = ''
@@ -82,16 +82,26 @@ def main():
         'all_head_ground_truth': all_head_ground_truth,
         'neigh': neigh
     }
-
-    datamodule = DataModule(configs, train_triples, valid_triples, test_triples, name_list_dict, prefix_trie_dict, ground_truth_dict)
+    if configs.pretrainKG:
+        datamodule = PretrainDataModule(configs, name_list_dict, ground_truth_dict)
+    else:
+        datamodule = DataModule(configs, train_triples, valid_triples, test_triples, name_list_dict, prefix_trie_dict, ground_truth_dict)
     print('datamodule construction done.', flush=True)
 
-    checkpoint_callback = ModelCheckpoint(
-        monitor='val_mrr',
-        dirpath=configs.save_dir,
-        filename=configs.dataset + '-{epoch:03d}-{' + 'val_mrr' + ':.4f}',
-        mode='max'
-    )
+    if configs.pretrainKG:
+        checkpoint_callback = ModelCheckpoint(
+            monitor='loss',
+            dirpath=configs.save_dir,
+            filename=configs.dataset + '-{epoch:03d}-{' + 'loss' + ':.4f}',
+            mode='min'
+        )
+    else:
+        checkpoint_callback = ModelCheckpoint(
+            monitor='val_mrr',
+            dirpath=configs.save_dir,
+            filename=configs.dataset + '-{epoch:03d}-{' + 'val_mrr' + ':.4f}',
+            mode='max'
+        )
     printing_callback = PrintingCallback()
 
     gpu = [int(configs.gpu)] if torch.cuda.is_available() else 0
@@ -114,14 +124,20 @@ def main():
         'name_list_dict': name_list_dict,
         'prefix_trie_dict': prefix_trie_dict
     }
-
-    if configs.model_path == '':
+    if configs.pretrainKG:
         model = T5Finetuner(configs, **kw_args)
         print('model construction done.', flush=True)
         trainer.fit(model, datamodule)
         model_path = checkpoint_callback.best_model_path
     else:
-        model_path = configs.model_path
+        if configs.istrain :
+            model = T5Finetuner.load_from_checkpoint(configs.model_path, strict=False, configs=configs, **kw_args)
+            # model = T5Finetuner(configs, **kw_args)
+            print('model construction done.', flush=True)
+            trainer.fit(model, datamodule)
+            model_path = checkpoint_callback.best_model_path
+        else:
+            model_path = configs.model_path
     print('model_path:', model_path, flush=True)
     model = T5Finetuner.load_from_checkpoint(model_path, strict=False, configs=configs, **kw_args)
     trainer.test(model, dataloaders=datamodule)
@@ -138,7 +154,8 @@ if __name__ == '__main__':
     parser.add_argument('-seed', dest='seed', default=41504, type=int, help='Seed for randomization')
     parser.add_argument('-num_workers', type=int, default=4, help='Number of processes to construct batches')
     parser.add_argument('-save_dir', type=str, default='', help='')
-
+    parser.add_argument('-pretrainKG', type=int, default=0, help='')
+    parser.add_argument('-istrain', type=int, default=0, help='')
     parser.add_argument('-pretrained_model', type=str, default='t5-base', help='')
     parser.add_argument('-batch_size', default=64, type=int, help='Batch size')
     parser.add_argument('-val_batch_size', default=8, type=int, help='Batch size')

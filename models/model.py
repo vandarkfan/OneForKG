@@ -15,6 +15,7 @@ class T5Finetuner(pl.LightningModule):
         super().__init__()
         self.save_hyperparameters()
         self.configs = configs
+        self.pretrainKG = configs.pretrainKG
         self.train_tail_ground_truth = ground_truth_dict['train_tail_ground_truth']
         self.train_head_ground_truth = ground_truth_dict['train_head_ground_truth']
         self.all_tail_ground_truth = ground_truth_dict['all_tail_ground_truth']
@@ -31,19 +32,19 @@ class T5Finetuner(pl.LightningModule):
             self.ent_token_ids_in_trie_with_descrip = prefix_trie_dict['ent_token_ids_in_trie_with_descrip']
         self.T5ForConditionalGeneration = ModifiedT5ForConditionalGeneration.from_pretrained(configs.pretrained_model)
 
-        # checkpoint = torch.load('/media/xyf/9C1050A4105086E4/KG/chatgpt_class/KG-S2S-main/complex_wn18rr1536/t5_complex_model.tar')
         checkpoint = torch.load('./complex_wn18rr1536/t5_complex_model.tar')
-        self.ent_embed = nn.Embedding.from_pretrained(checkpoint['ent_embed'])
+        entadd = torch.zeros([1,checkpoint['rel_embed'].shape[-1]])
+        entadd = torch.cat([checkpoint['ent_embed'],entadd],dim=0)
+        self.ent_embed = nn.Embedding.from_pretrained(entadd)
         self.ent_embed.weight.requires_grad = False
         self.rel_embed = nn.Embedding.from_pretrained(checkpoint['rel_embed'])
         self.rel_embed.weight.requires_grad = False
         self.w = 0.01
         self.prompt_dim = checkpoint['rel_embed'].shape[-1]
+
         # self.prompt_dim = self.T5ForConditionalGeneration.model_dim * 2
         # self.ent_embed = nn.Embedding(self.configs.n_ent, self.prompt_dim)
         # self.rel_embed = nn.Embedding(self.configs.n_rel * 2, self.prompt_dim)
-        # self.ent_embed.weight.data *= 0.001
-        # self.rel_embed.weight.data *= 0.001
 
 
         if self.configs.use_soft_prompt:
@@ -61,9 +62,26 @@ class T5Finetuner(pl.LightningModule):
 
     def training_step(self, batched_data, batch_idx):
         # src_ids, src_mask: .shape: (batch_size, padded_seq_len)
-        loss_tail = self.training_step_dan(batched_data[0], batch_idx)
-        loss_head = self.training_step_dan(batched_data[1], batch_idx)
-        loss = (loss_tail + loss_head)/2
+        if self.pretrainKG :
+            src_ids = batched_data['source_ids']
+            src_mask = batched_data['source_mask']
+            target_ids = batched_data['target_ids']
+            target_mask = batched_data['target_mask']
+            word_mask = batched_data['word_mask']
+            input_entity_id = batched_data['input_entity_id']#[32,43]
+            labels = target_ids.clone()
+            labels[labels[:, :] == self.trainer.datamodule.tokenizer.pad_token_id] = -100
+            entity_hidden_state = self.ent_embed(input_entity_id)#[32,43,1536]
+            entity_hidden_state = torch.reshape(entity_hidden_state, (entity_hidden_state.shape[0],entity_hidden_state.shape[1]*2,-1))
+            entity_hidden_state = entity_hidden_state[:,:input_entity_id.shape[1],:]
+            output = self.T5ForConditionalGeneration(input_ids=src_ids, attention_mask=src_mask, labels=labels, entity_mask = word_mask,
+                                                     entity_hidden_state=entity_hidden_state.to(src_ids.device))
+            loss = torch.mean(output.loss)
+            self.history['loss'].append(loss.detach().item())
+        else:
+            loss_tail = self.training_step_dan(batched_data[0], batch_idx)
+            loss_head = self.training_step_dan(batched_data[1], batch_idx)
+            loss = (loss_tail + loss_head)/2
 
         return {'loss': loss}
 
@@ -82,27 +100,45 @@ class T5Finetuner(pl.LightningModule):
         ent_rel = batched_data['ent_rel']
         mode = batched_data['mode']
         ent_ids, rel_ids = torch.squeeze(ent_rel[:, [0]]), torch.squeeze(ent_rel[:, [1]])
-        target_entity = torch.tensor(batched_data['target_ent'])
+        target_entity = torch.tensor(batched_data['target_ent']).to(src_ids.device)
         entity_id_embed = self.ent_embed(ent_ids)
+        # if mode == 'head':
+        #     rel_id_embed = self.rel_embed(rel_ids + self.configs.n_rel)  # 32,1536
+        # else:
+        #     rel_id_embed = self.rel_embed(rel_ids)
+
         if mode == 'head':
             rel_id_embed = self.rel_embed(rel_ids + self.configs.n_rel)#32,1536
             rel_id_embed_real, rel_id_embed_imag = rel_id_embed[:, :int(self.prompt_dim/2)], rel_id_embed[:, int(self.prompt_dim/2):]
             ent_id_embed_real, ent_id_embed_imag = entity_id_embed[:, :int(self.prompt_dim/2)], entity_id_embed[:, int(self.prompt_dim/2):]
-            add_entrel = torch.zeros([batched_data['source_ids'].shape[0], batched_data['source_ids'].shape[1], int(self.prompt_dim/2)])
-            add_entrel[:, int(sep[0] +1):int((sep[0] + sep[1])/2), :] = rel_id_embed_real.unsqueeze(dim = 1).repeat(1, int((sep[0] + sep[1])/2) - int(sep[0] +1), 1)
-            add_entrel[:, int((sep[0] + sep[1])/2):int(sep[1]), :] = rel_id_embed_imag.unsqueeze(dim = 1).repeat(1, int(sep[1]) - int((sep[0] + sep[1])/2), 1)
-            add_entrel[:, int(sep[1] + 1):int((sep[1] + sep[2]) / 2), :] = ent_id_embed_real.unsqueeze(dim = 1).repeat(1, int((sep[1] + sep[2]) / 2) - int(sep[1] + 1), 1)
-            add_entrel[:, int((sep[1] + sep[2]) / 2):int(sep[2]), :] = ent_id_embed_imag.unsqueeze(dim = 1).repeat(1, int(sep[2]) - int((sep[1] + sep[2]) / 2), 1)
+            addsource = torch.zeros([batched_data['source_ids'].shape[0], batched_data['source_ids'].shape[1], int(self.prompt_dim/2)])
+            addsource[:, int(sep[0] +1):int((sep[0] + sep[1])/2), :] = rel_id_embed_real.unsqueeze(dim = 1).repeat(1, int((sep[0] + sep[1])/2) - int(sep[0] +1), 1)
+            addsource[:, int((sep[0] + sep[1])/2):int(sep[1]), :] = rel_id_embed_imag.unsqueeze(dim = 1).repeat(1, int(sep[1]) - int((sep[0] + sep[1])/2), 1)
+            addsource[:, int(sep[1] + 1):int((sep[1] + sep[2]) / 2), :] = ent_id_embed_real.unsqueeze(dim = 1).repeat(1, int((sep[1] + sep[2]) / 2) - int(sep[1] + 1), 1)
+            addsource[:, int((sep[1] + sep[2]) / 2):int(sep[2]), :] = ent_id_embed_imag.unsqueeze(dim = 1).repeat(1, int(sep[2]) - int((sep[1] + sep[2]) / 2), 1)
+
         else:
             rel_id_embed = self.rel_embed(rel_ids)
             rel_id_embed_real, rel_id_embed_imag = rel_id_embed[:, :int(self.prompt_dim/2)], rel_id_embed[:, int(self.prompt_dim/2):]
             ent_id_embed_real, ent_id_embed_imag = entity_id_embed[:, :int(self.prompt_dim/2)], entity_id_embed[:, int(self.prompt_dim/2):]
-            add_entrel = torch.zeros([batched_data['source_ids'].shape[0], batched_data['source_ids'].shape[1], int(self.prompt_dim/2)])
-            add_entrel[:, :int(sep[0]/2), :] = ent_id_embed_real.unsqueeze(dim = 1).repeat(1, int(sep[0]/2), 1)
-            add_entrel[:, int(sep[0]/2):int(sep[0]), :] = ent_id_embed_imag.unsqueeze(dim = 1).repeat(1, int(sep[0]) - int(sep[0]/2), 1)
-            add_entrel[:, int(sep[0] + 1):int((sep[0] + sep[1]) / 2), :] = rel_id_embed_real.unsqueeze(dim = 1).repeat(1, int((sep[0] + sep[1]) / 2) - int(sep[0] + 1), 1)
-            add_entrel[:, int((sep[0] + sep[1]) / 2):int(sep[1]), :] = rel_id_embed_imag.unsqueeze(dim = 1).repeat(1, int(sep[1]) - int((sep[0] + sep[1]) / 2), 1)
+            addsource = torch.zeros([batched_data['source_ids'].shape[0], batched_data['source_ids'].shape[1], int(self.prompt_dim/2)])
+            addsource[:, :int(sep[0]/2), :] = ent_id_embed_real.unsqueeze(dim = 1).repeat(1, int(sep[0]/2), 1)
+            addsource[:, int(sep[0]/2):int(sep[0]), :] = ent_id_embed_imag.unsqueeze(dim = 1).repeat(1, int(sep[0]) - int(sep[0]/2), 1)
+            addsource[:, int(sep[0] + 1):int((sep[0] + sep[1]) / 2), :] = rel_id_embed_real.unsqueeze(dim = 1).repeat(1, int((sep[0] + sep[1]) / 2) - int(sep[0] + 1), 1)
+            addsource[:, int((sep[0] + sep[1]) / 2):int(sep[1]), :] = rel_id_embed_imag.unsqueeze(dim = 1).repeat(1, int(sep[1]) - int((sep[0] + sep[1]) / 2), 1)
+        entity_hidden_state = torch.cat([entity_id_embed,rel_id_embed], dim = 1).view(target_ids.shape[0],4,-1).to(src_ids.device)
 
+        addentity = torch.zeros([src_ids.shape[0],src_ids.shape[1]-4,entity_hidden_state.shape[-1]]).to(src_ids.device)
+        entity_hidden_state = torch.cat([entity_hidden_state,addentity],dim=1).to(src_ids.device)
+
+        # addtarget = torch.zeros(
+        #     [batched_data['target_ids'].shape[0], batched_data['target_ids'].shape[1], int(self.prompt_dim / 2)])
+        # hlen = batched_data['target_ids'].shape[1]
+        # target_embed = self.ent_embed(target_entity)
+        # target_embed_real, target_embed_imag = target_embed[:, :int(self.prompt_dim / 2)], target_embed[:,
+        #                                                                                    int(self.prompt_dim / 2):]
+        # addtarget[:, :int(hlen / 2), :] = target_embed_real.unsqueeze(dim=1).repeat(1, int(hlen / 2), 1)
+        # addtarget[:, int(hlen / 2):, :] = target_embed_imag.unsqueeze(dim=1).repeat(1, int(hlen)-int(hlen / 2), 1)
 
         if self.configs.use_soft_prompt:
             # input_index .shape: (batch_size, seq_len + 4)
@@ -143,7 +179,7 @@ class T5Finetuner(pl.LightningModule):
                                                      output_hidden_states=True)
         else:
             output = self.T5ForConditionalGeneration(input_ids=src_ids, attention_mask=src_mask, labels=labels,
-                                                     entity_id_embed=add_entrel)
+                                                     entity_hidden_state=entity_hidden_state.to(src_ids.device),addsource =addsource.to(src_ids.device))
         loss = torch.mean(output.loss)
 
         # ent = output.encoder_last_hidden_state[:,:2,:].view(batched_data['source_ids'].shape[0],-1)
@@ -232,117 +268,138 @@ class T5Finetuner(pl.LightningModule):
             scores = lhs_scores
         return scores
     def validation_step(self, batched_data, batch_idx, dataset_idx):
+    # def validation_step(self, batched_data, batch_idx):
         if self.current_epoch < self.configs.skip_n_val_epoch:
             return
+        if self.pretrainKG:
+            src_ids = batched_data['source_ids']
+            src_mask = batched_data['source_mask']
+            target_ids = batched_data['target_ids']
+            target_mask = batched_data['target_mask']
+            word_mask = batched_data['word_mask']
+            input_entity_id = batched_data['input_entity_id']
+            labels = target_ids.clone()
+            labels[labels[:, :] == self.trainer.datamodule.tokenizer.pad_token_id] = -100
+            entity_hidden_state = self.ent_embed(input_entity_id)
+            entity_hidden_state = torch.reshape(entity_hidden_state, (entity_hidden_state.shape[0],entity_hidden_state.shape[1]*2,-1))
+            entity_hidden_state = entity_hidden_state[:,:input_entity_id.shape[1],:]
+            output = self.T5ForConditionalGeneration(input_ids=src_ids, attention_mask=src_mask, labels=labels, entity_mask = word_mask,
+                                                     entity_hidden_state=entity_hidden_state.to(src_ids.device))
+            loss = torch.mean(output.loss)
+            return {'loss': loss}
+        else:
         # src_ids, src_mask: .shape: (batch_size, padded_seq_len) .type: torch.tensor
-        src_ids = batched_data['source_ids']
-        src_mask = batched_data['source_mask']
-        # src_names, target_names: .shape: (batch_size, ) .type:list(str)
-        src_names = batched_data['source_names']
-        target_names = batched_data['target_names']
-        # test_triple: .shape: (batch_size, 3)
-        self.test_triple = batched_data['test_triple']
-        # ent_rel: .shape: (batch_size, 2)
-        self.ent_rel = batched_data['ent_rel']
-        target_entity = torch.tensor(batched_data['target_ent'])
-        mode = batched_data['mode']
-        self.dataset_idx = dataset_idx
-        sep = batched_data['sep'][0]
-        ent_ids, rel_ids = torch.squeeze(self.ent_rel[:, [0]]), torch.squeeze(self.ent_rel[:, [1]])
-        entity_id_embed = self.ent_embed(ent_ids)
-        if mode == 'head':
-            rel_id_embed = self.rel_embed(rel_ids + self.configs.n_rel)#32,1536
-            rel_id_embed_real, rel_id_embed_imag = rel_id_embed[:, :int(self.prompt_dim/2)], rel_id_embed[:, int(self.prompt_dim/2):]
-            ent_id_embed_real, ent_id_embed_imag = entity_id_embed[:, :int(self.prompt_dim/2)], entity_id_embed[:, int(self.prompt_dim/2):]
-            add_entrel = torch.zeros([batched_data['source_ids'].shape[0], batched_data['source_ids'].shape[1], int(self.prompt_dim/2)])
-            add_entrel[:, int(sep[0] +1):int((sep[0] + sep[1])/2), :] = rel_id_embed_real.unsqueeze(dim = 1).repeat(1, int((sep[0] + sep[1])/2) - int(sep[0] +1), 1)
-            add_entrel[:, int((sep[0] + sep[1])/2):int(sep[1]), :] = rel_id_embed_imag.unsqueeze(dim = 1).repeat(1, int(sep[1]) - int((sep[0] + sep[1])/2), 1)
-            add_entrel[:, int(sep[1] + 1):int((sep[1] + sep[2]) / 2), :] = ent_id_embed_real.unsqueeze(dim = 1).repeat(1, int((sep[1] + sep[2]) / 2) - int(sep[1] + 1), 1)
-            add_entrel[:, int((sep[1] + sep[2]) / 2):int(sep[2]), :] = ent_id_embed_imag.unsqueeze(dim = 1).repeat(1, int(sep[2]) - int((sep[1] + sep[2]) / 2), 1)
-        else:
-            rel_id_embed = self.rel_embed(rel_ids)
-            rel_id_embed_real, rel_id_embed_imag = rel_id_embed[:, :int(self.prompt_dim/2)], rel_id_embed[:, int(self.prompt_dim/2):]
-            ent_id_embed_real, ent_id_embed_imag = entity_id_embed[:, :int(self.prompt_dim/2)], entity_id_embed[:, int(self.prompt_dim/2):]
-            add_entrel = torch.zeros([batched_data['source_ids'].shape[0], batched_data['source_ids'].shape[1], int(self.prompt_dim/2)])
-            add_entrel[:, :int(sep[0]/2), :] = ent_id_embed_real.unsqueeze(dim = 1).repeat(1, int(sep[0]/2), 1)
-            add_entrel[:, int(sep[0]/2):int(sep[0]), :] = ent_id_embed_imag.unsqueeze(dim = 1).repeat(1, int(sep[0]) - int(sep[0]/2), 1)
-            add_entrel[:, int(sep[0] + 1):int((sep[0] + sep[1]) / 2), :] = rel_id_embed_real.unsqueeze(dim = 1).repeat(1, int((sep[0] + sep[1]) / 2) - int(sep[0] + 1), 1)
-            add_entrel[:, int((sep[0] + sep[1]) / 2):int(sep[1]), :] = rel_id_embed_imag.unsqueeze(dim = 1).repeat(1, int(sep[1]) - int((sep[0] + sep[1]) / 2), 1)
-
-
-        if dataset_idx == 0:
-            self.all_ground_truth = self.all_tail_ground_truth
-            self.train_ground_truth = self.train_tail_ground_truth
-        else:
-            self.all_ground_truth = self.all_head_ground_truth
-            self.train_ground_truth = self.train_head_ground_truth
-
-
-
-
-        # generated_text .type: list(str) .len: batch_size * num_beams
-        generated_text, scores_t5 = self.decode(src_ids, src_mask, batched_data, add_entrel)
-        group_text = [generated_text[i:i + self.configs.num_beams] for i in range(0, len(generated_text), self.configs.num_beams)]
-
-
-        # scores_t5 = scores_t5.contiguous().view(-1, self.configs.num_beams)
-        # scores_t5 = torch.softmax(scores_t5, dim=1)
-        # generated_id = -1 * torch.ones([len(generated_text)])
-        # for i in range(len(generated_text)):
-        #     if generated_text[i] in self.entname2id.keys():
-        #         generated_id[i] = self.entname2id[generated_text[i]]
-        # generated_id = generated_id.contiguous().view(-1, self.configs.num_beams)
-        # scores_complex = self.complex_s(mode = mode, ent_ids = ent_ids, rel_ids = rel_ids)
-        # scores_complex2t5 = -1 * torch.ones([generated_id.shape[0], generated_id.shape[1]])
-        # for i in range(generated_id.shape[0]):
-        #     for j in range(generated_id.shape[1]):
-        #         if generated_id[i,j]!=-1:
-        #             scores_complex2t5[i,j] = scores_complex[i, int(generated_id[i,j])]#[8,40]里面不对劲的玩意都变成-10000了，有数字的可能在-7~7之间
-        #         else:
-        #             scores_complex2t5[i, j] = -10000
-        # scores_complex2t5 = torch.softmax(scores_complex2t5, dim=1)
-        # scores = (1 - self.w) * scores_t5 + self.w * scores_complex2t5.to(0)
-        # sorted_scores, indices = torch.sort(scores, descending=True, dim=-1)
-        # sorted_group_text = []
-        #
-        #
-        # for i in range(len(group_text)):
-        #     sorted_group_text_dan = []
-        #     for j in range(self.configs.num_beams):
-        #         sorted_group_text_dan.append(group_text[i][indices[i,j]])
-        #     sorted_group_text.append(sorted_group_text_dan)
-        # group_text = sorted_group_text
-
-
-        if self.configs.log_text:
-            self.log_generation(group_text, src_names, target_names, batch_idx, dataset_idx)
-        ranks = []
-        for i, texts in enumerate(group_text):
-            if self.configs.temporal:
-                hr_key = (self.test_triple[i][dataset_idx], self.test_triple[i][2], self.test_triple[i][3])
+            src_ids = batched_data['source_ids']
+            src_mask = batched_data['source_mask']
+            # src_names, target_names: .shape: (batch_size, ) .type:list(str)
+            src_names = batched_data['source_names']
+            target_names = batched_data['target_names']
+            # test_triple: .shape: (batch_size, 3)
+            self.test_triple = batched_data['test_triple']
+            # ent_rel: .shape: (batch_size, 2)
+            self.ent_rel = batched_data['ent_rel']
+            target_entity = torch.tensor(batched_data['target_ent']).to(src_ids.device)
+            mode = batched_data['mode']
+            self.dataset_idx = dataset_idx
+            sep = batched_data['sep'][0]
+            ent_ids, rel_ids = torch.squeeze(self.ent_rel[:, [0]]), torch.squeeze(self.ent_rel[:, [1]])
+            entity_id_embed = self.ent_embed(ent_ids)
+            if mode == 'head':
+                rel_id_embed = self.rel_embed(rel_ids + self.configs.n_rel)#32,1536
+                rel_id_embed_real, rel_id_embed_imag = rel_id_embed[:, :int(self.prompt_dim/2)], rel_id_embed[:, int(self.prompt_dim/2):]
+                ent_id_embed_real, ent_id_embed_imag = entity_id_embed[:, :int(self.prompt_dim/2)], entity_id_embed[:, int(self.prompt_dim/2):]
+                addsource = torch.zeros([batched_data['source_ids'].shape[0], batched_data['source_ids'].shape[1], int(self.prompt_dim/2)])
+                addsource[:, int(sep[0] +1):int((sep[0] + sep[1])/2), :] = rel_id_embed_real.unsqueeze(dim = 1).repeat(1, int((sep[0] + sep[1])/2) - int(sep[0] +1), 1)
+                addsource[:, int((sep[0] + sep[1])/2):int(sep[1]), :] = rel_id_embed_imag.unsqueeze(dim = 1).repeat(1, int(sep[1]) - int((sep[0] + sep[1])/2), 1)
+                addsource[:, int(sep[1] + 1):int((sep[1] + sep[2]) / 2), :] = ent_id_embed_real.unsqueeze(dim = 1).repeat(1, int((sep[1] + sep[2]) / 2) - int(sep[1] + 1), 1)
+                addsource[:, int((sep[1] + sep[2]) / 2):int(sep[2]), :] = ent_id_embed_imag.unsqueeze(dim = 1).repeat(1, int(sep[2]) - int((sep[1] + sep[2]) / 2), 1)
             else:
-                hr_key = (self.test_triple[i][dataset_idx], self.test_triple[i][2])
-            all_gt_ids = self.all_ground_truth[hr_key]#list里面是这个实体应该过滤的id
-            all_gt_seqs = [self.ent_name_list[ids] for ids in all_gt_ids]
+                rel_id_embed = self.rel_embed(rel_ids)
+                rel_id_embed_real, rel_id_embed_imag = rel_id_embed[:, :int(self.prompt_dim/2)], rel_id_embed[:, int(self.prompt_dim/2):]
+                ent_id_embed_real, ent_id_embed_imag = entity_id_embed[:, :int(self.prompt_dim/2)], entity_id_embed[:, int(self.prompt_dim/2):]
+                addsource = torch.zeros([batched_data['source_ids'].shape[0], batched_data['source_ids'].shape[1], int(self.prompt_dim/2)])
+                addsource[:, :int(sep[0]/2), :] = ent_id_embed_real.unsqueeze(dim = 1).repeat(1, int(sep[0]/2), 1)
+                addsource[:, int(sep[0]/2):int(sep[0]), :] = ent_id_embed_imag.unsqueeze(dim = 1).repeat(1, int(sep[0]) - int(sep[0]/2), 1)
+                addsource[:, int(sep[0] + 1):int((sep[0] + sep[1]) / 2), :] = rel_id_embed_real.unsqueeze(dim = 1).repeat(1, int((sep[0] + sep[1]) / 2) - int(sep[0] + 1), 1)
+                addsource[:, int((sep[0] + sep[1]) / 2):int(sep[1]), :] = rel_id_embed_imag.unsqueeze(dim = 1).repeat(1, int(sep[1]) - int((sep[0] + sep[1]) / 2), 1)
+            entity_hidden_state = torch.cat([entity_id_embed,rel_id_embed], dim = 1).view(src_ids.shape[0],4,-1).to(src_ids.device)
 
-            ## get rank
-            if target_names[i] in texts:
-                top_entities = set()
-                rank = 1
-                for text in texts:
-                    if text == target_names[i]:
-                        ranks.append(rank)
-                        break
-                    if text in set(self.ent_name_list) and (text not in all_gt_seqs) and (text not in top_entities):
-                        top_entities.add(text)
-                        rank += 1
+            addentity = torch.zeros([src_ids.shape[0],src_ids.shape[1]-4,entity_hidden_state.shape[-1]]).to(src_ids.device)
+            entity_hidden_state = torch.cat([entity_hidden_state,addentity],dim=1).to(src_ids.device)
+
+            if dataset_idx == 0:
+                self.all_ground_truth = self.all_tail_ground_truth
+                self.train_ground_truth = self.train_tail_ground_truth
             else:
-                ranks.append(random.randint(self.configs.num_beams + 1, self.configs.n_ent))
+                self.all_ground_truth = self.all_head_ground_truth
+                self.train_ground_truth = self.train_head_ground_truth
 
-        out = {'ranks': ranks}
-        return out
 
-    def decode(self, src_ids, src_mask, batched_data, entity_id_embed):
+
+
+            # generated_text .type: list(str) .len: batch_size * num_beams
+            generated_text, scores_t5 = self.decode(src_ids, src_mask, batched_data, entity_hidden_state,addsource.to(src_ids.device))
+            group_text = [generated_text[i:i + self.configs.num_beams] for i in range(0, len(generated_text), self.configs.num_beams)]
+
+            #
+            # scores_t5 = scores_t5.contiguous().view(-1, self.configs.num_beams)
+            # scores_t5 = torch.softmax(scores_t5, dim=1)
+            # generated_id = -1 * torch.ones([len(generated_text)])
+            # for i in range(len(generated_text)):
+            #     if generated_text[i] in self.entname2id.keys():
+            #         generated_id[i] = self.entname2id[generated_text[i]]
+            # generated_id = generated_id.contiguous().view(-1, self.configs.num_beams)
+            # scores_complex = self.complex_s(mode = mode, ent_ids = ent_ids, rel_ids = rel_ids)
+            # scores_complex2t5 = -1 * torch.ones([generated_id.shape[0], generated_id.shape[1]])
+            # for i in range(generated_id.shape[0]):
+            #     for j in range(generated_id.shape[1]):
+            #         if generated_id[i,j]!=-1:
+            #             scores_complex2t5[i,j] = scores_complex[i, int(generated_id[i,j])]#[8,40]里面不对劲的玩意都变成-10000了，有数字的可能在-7~7之间
+            #         else:
+            #             scores_complex2t5[i, j] = -10000
+            # scores_complex2t5 = torch.softmax(scores_complex2t5, dim=1)
+            # scores = (1 - self.w) * scores_t5 + self.w * scores_complex2t5.to(0)
+            # sorted_scores, indices = torch.sort(scores, descending=True, dim=-1)
+            # sorted_group_text = []
+            #
+            #
+            # for i in range(len(group_text)):
+            #     sorted_group_text_dan = []
+            #     for j in range(self.configs.num_beams):
+            #         sorted_group_text_dan.append(group_text[i][indices[i,j]])
+            #     sorted_group_text.append(sorted_group_text_dan)
+            # group_text = sorted_group_text
+
+
+            if self.configs.log_text:
+                self.log_generation(group_text, src_names, target_names, batch_idx, dataset_idx)
+            ranks = []
+            for i, texts in enumerate(group_text):
+                if self.configs.temporal:
+                    hr_key = (self.test_triple[i][dataset_idx], self.test_triple[i][2], self.test_triple[i][3])
+                else:
+                    hr_key = (self.test_triple[i][dataset_idx], self.test_triple[i][2])
+                all_gt_ids = self.all_ground_truth[hr_key]#list里面是这个实体应该过滤的id
+                all_gt_seqs = [self.ent_name_list[ids] for ids in all_gt_ids]
+
+                ## get rank
+                if target_names[i] in texts:
+                    top_entities = set()
+                    rank = 1
+                    for text in texts:
+                        if text == target_names[i]:
+                            ranks.append(rank)
+                            break
+                        if text in set(self.ent_name_list) and (text not in all_gt_seqs) and (text not in top_entities):
+                            top_entities.add(text)
+                            rank += 1
+                else:
+                    ranks.append(random.randint(self.configs.num_beams + 1, self.configs.n_ent))
+
+            out = {'ranks': ranks}
+            return out
+
+    def decode(self, src_ids, src_mask, batched_data, entity_hidden_state,addsource):
         def _extract(generated_text):
             if self.configs.tgt_descrip_max_length > 0:
                 compiler = re.compile(r'<extra_id_0>(.*?)\[')
@@ -423,7 +480,8 @@ class T5Finetuner(pl.LightningModule):
                                                                    prefix_allowed_tokens_fn=prefix_allowed_tokens_fn,
                                                                    num_beams=self.configs.num_beams,
                                                                    output_scores=True,
-                                                                   entity_id_embed=entity_id_embed,
+                                                                   entity_hidden_state=entity_hidden_state.to(src_ids.device),
+                                                                   addsource=addsource,
                                                                    )
             raw_generated_text = self.trainer.datamodule.tokenizer.batch_decode(outputs.sequences)
             generated_text = _extract(raw_generated_text)#320个，实体text
@@ -533,30 +591,42 @@ class T5Finetuner(pl.LightningModule):
                         ii += 1
 
     def validation_epoch_end(self, outs):
-        if self.current_epoch < self.configs.skip_n_val_epoch:
-            return
-        pred_tail_out, pred_head_out = outs
-        agg_tail_out, agg_head_out, agg_total_out = dict(), dict(), dict()
-        for out in pred_tail_out:
-            for key, value in out.items():
-                if key in agg_tail_out:
-                    agg_tail_out[key] += value
-                else:
-                    agg_tail_out[key] = value
+        if self.pretrainKG:
+            if len(outs)!=0:
+                agg_out = dict()
+                for out in outs:
+                    for key, value in out.items():
+                        if key in agg_out:
+                            agg_out[key] += value
+                        else:
+                            agg_out[key] = value
+                self.log('loss', agg_out['loss'].item())
+                print(agg_out['loss'].item())
+        else:
+            if self.current_epoch < self.configs.skip_n_val_epoch:
+                return
+            pred_tail_out, pred_head_out = outs
+            agg_tail_out, agg_head_out, agg_total_out = dict(), dict(), dict()
+            for out in pred_tail_out:
+                for key, value in out.items():
+                    if key in agg_tail_out:
+                        agg_tail_out[key] += value
+                    else:
+                        agg_tail_out[key] = value
 
-        for out in pred_head_out:
-            for key, value in out.items():
-                if key in agg_head_out:
-                    agg_head_out[key] += value
-                else:
-                    agg_head_out[key] = value
+            for out in pred_head_out:
+                for key, value in out.items():
+                    if key in agg_head_out:
+                        agg_head_out[key] += value
+                    else:
+                        agg_head_out[key] = value
 
-        tail_ranks, head_ranks = agg_tail_out['ranks'], agg_head_out['ranks']
-        del agg_tail_out['ranks']
-        del agg_head_out['ranks']
+            tail_ranks, head_ranks = agg_tail_out['ranks'], agg_head_out['ranks']
+            del agg_tail_out['ranks']
+            del agg_head_out['ranks']
 
-        perf = get_performance(self, tail_ranks, head_ranks)
-        print(perf)
+            perf = get_performance(self, tail_ranks, head_ranks)
+            print(perf)
 
     def test_step(self, batched_data, batch_idx, dataset_idx):
         return self.validation_step(batched_data, batch_idx, dataset_idx)

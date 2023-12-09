@@ -836,7 +836,7 @@ class GenerationMixin:
         forced_eos_token_id: Optional[int] = None,
         remove_invalid_values: Optional[bool] = None,
         synced_gpus: Optional[bool] = None,
-        entity_id_embed = None,
+        entity_hidden_state = None,
         **model_kwargs,
     ) -> Union[GreedySearchOutput, SampleOutput, BeamSearchOutput, BeamSampleOutput, torch.LongTensor]:
         r"""
@@ -1074,7 +1074,7 @@ class GenerationMixin:
         model_kwargs["output_attentions"] = output_attentions
         model_kwargs["output_hidden_states"] = output_hidden_states
         model_kwargs["use_cache"] = use_cache
-        model_kwargs["entity_id_embed"] = entity_id_embed
+        model_kwargs["entity_hidden_state"] = entity_hidden_state
         accepts_attention_mask = "attention_mask" in set(inspect.signature(self.forward).parameters.keys())
         requires_attention_mask = "encoder_outputs" not in model_kwargs
 
@@ -1971,7 +1971,7 @@ class GenerationMixin:
                 if this_peer_finished_flag.item() == 0.0:
                     break
             model_inputs = self.prepare_inputs_for_generation(input_ids, **model_kwargs)
-            model_inputs['entity_id_embed'] = model_kwargs['entity_id_embed']
+            model_inputs['entity_hidden_state'] = model_kwargs['entity_hidden_state']
             outputs = self(
                 **model_inputs,
                 return_dict=True,
