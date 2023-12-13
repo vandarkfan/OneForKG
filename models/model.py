@@ -33,9 +33,7 @@ class T5Finetuner(pl.LightningModule):
         self.T5ForConditionalGeneration = ModifiedT5ForConditionalGeneration.from_pretrained(configs.pretrained_model)
 
         checkpoint = torch.load('./complex_wn18rr1536/t5_complex_model.tar')
-        entadd = torch.zeros([1,checkpoint['rel_embed'].shape[-1]])
-        entadd = torch.cat([checkpoint['ent_embed'],entadd],dim=0)
-        self.ent_embed = nn.Embedding.from_pretrained(entadd)
+        self.ent_embed = nn.Embedding.from_pretrained(checkpoint['ent_embed'])
         self.ent_embed.weight.requires_grad = False
         self.rel_embed = nn.Embedding.from_pretrained(checkpoint['rel_embed'])
         self.rel_embed.weight.requires_grad = False
@@ -67,14 +65,15 @@ class T5Finetuner(pl.LightningModule):
             src_mask = batched_data['source_mask']
             target_ids = batched_data['target_ids']
             target_mask = batched_data['target_mask']
-            word_mask = batched_data['word_mask']
+            # word_mask = batched_data['word_mask']
             input_entity_id = batched_data['input_entity_id']#[32,43]
             labels = target_ids.clone()
             labels[labels[:, :] == self.trainer.datamodule.tokenizer.pad_token_id] = -100
+            input_entity_id = torch.Tensor(input_entity_id)
+            input_entity_id = torch.unsqueeze(input_entity_id, -1).long().to(src_ids.device)
             entity_hidden_state = self.ent_embed(input_entity_id)#[32,43,1536]
-            entity_hidden_state = torch.reshape(entity_hidden_state, (entity_hidden_state.shape[0],entity_hidden_state.shape[1]*2,-1))
-            entity_hidden_state = entity_hidden_state[:,:input_entity_id.shape[1],:]
-            output = self.T5ForConditionalGeneration(input_ids=src_ids, attention_mask=src_mask, labels=labels, entity_mask = word_mask,
+            entity_hidden_state = torch.reshape(entity_hidden_state, (entity_hidden_state.shape[0],2,-1))
+            output = self.T5ForConditionalGeneration(input_ids=src_ids, attention_mask=src_mask, labels=labels,
                                                      entity_hidden_state=entity_hidden_state.to(src_ids.device))
             loss = torch.mean(output.loss)
             self.history['loss'].append(loss.detach().item())
@@ -91,6 +90,8 @@ class T5Finetuner(pl.LightningModule):
         # target_ids, target_mask, labels: .shape: (batch_size, padded_seq_len)
         target_ids = batched_data['target_ids']
         target_mask = batched_data['target_mask']
+        input_entity_ids = batched_data['input_entity_ids']
+        input_entity_mask = batched_data['input_entity_mask']
         sep = batched_data['sep'][0]
         labels = target_ids.clone()
         labels[labels[:, :] == self.trainer.datamodule.tokenizer.pad_token_id] = -100
@@ -126,10 +127,10 @@ class T5Finetuner(pl.LightningModule):
             addsource[:, int(sep[0]/2):int(sep[0]), :] = ent_id_embed_imag.unsqueeze(dim = 1).repeat(1, int(sep[0]) - int(sep[0]/2), 1)
             addsource[:, int(sep[0] + 1):int((sep[0] + sep[1]) / 2), :] = rel_id_embed_real.unsqueeze(dim = 1).repeat(1, int((sep[0] + sep[1]) / 2) - int(sep[0] + 1), 1)
             addsource[:, int((sep[0] + sep[1]) / 2):int(sep[1]), :] = rel_id_embed_imag.unsqueeze(dim = 1).repeat(1, int(sep[1]) - int((sep[0] + sep[1]) / 2), 1)
-        entity_hidden_state = torch.cat([entity_id_embed,rel_id_embed], dim = 1).view(target_ids.shape[0],4,-1).to(src_ids.device)
+        # entity_hidden_state = torch.cat([entity_id_embed,rel_id_embed], dim = 1).view(target_ids.shape[0],4,-1).to(src_ids.device)
 
-        addentity = torch.zeros([src_ids.shape[0],src_ids.shape[1]-4,entity_hidden_state.shape[-1]]).to(src_ids.device)
-        entity_hidden_state = torch.cat([entity_hidden_state,addentity],dim=1).to(src_ids.device)
+        # addentity = torch.zeros([src_ids.shape[0],src_ids.shape[1]-4,entity_hidden_state.shape[-1]]).to(src_ids.device)
+        # entity_hidden_state = torch.cat([entity_hidden_state,addentity],dim=1).to(src_ids.device)
 
         # addtarget = torch.zeros(
         #     [batched_data['target_ids'].shape[0], batched_data['target_ids'].shape[1], int(self.prompt_dim / 2)])
@@ -179,7 +180,7 @@ class T5Finetuner(pl.LightningModule):
                                                      output_hidden_states=True)
         else:
             output = self.T5ForConditionalGeneration(input_ids=src_ids, attention_mask=src_mask, labels=labels,
-                                                     entity_hidden_state=entity_hidden_state.to(src_ids.device),addsource =addsource.to(src_ids.device))
+                                                     entity_hidden_state=input_entity_ids.to(src_ids.device),addsource =addsource.to(src_ids.device),entity_mask = input_entity_mask.to(src_ids.device))
         loss = torch.mean(output.loss)
 
         # ent = output.encoder_last_hidden_state[:,:2,:].view(batched_data['source_ids'].shape[0],-1)
@@ -276,14 +277,14 @@ class T5Finetuner(pl.LightningModule):
             src_mask = batched_data['source_mask']
             target_ids = batched_data['target_ids']
             target_mask = batched_data['target_mask']
-            word_mask = batched_data['word_mask']
             input_entity_id = batched_data['input_entity_id']
             labels = target_ids.clone()
             labels[labels[:, :] == self.trainer.datamodule.tokenizer.pad_token_id] = -100
-            entity_hidden_state = self.ent_embed(input_entity_id)
-            entity_hidden_state = torch.reshape(entity_hidden_state, (entity_hidden_state.shape[0],entity_hidden_state.shape[1]*2,-1))
-            entity_hidden_state = entity_hidden_state[:,:input_entity_id.shape[1],:]
-            output = self.T5ForConditionalGeneration(input_ids=src_ids, attention_mask=src_mask, labels=labels, entity_mask = word_mask,
+            input_entity_id = torch.Tensor(input_entity_id)
+            input_entity_id = torch.unsqueeze(input_entity_id, -1).long().to(src_ids.device)
+            entity_hidden_state = self.ent_embed(input_entity_id)  # [32,43,1536]
+            entity_hidden_state = torch.reshape(entity_hidden_state, (entity_hidden_state.shape[0], 2, -1))
+            output = self.T5ForConditionalGeneration(input_ids=src_ids, attention_mask=src_mask, labels=labels,
                                                      entity_hidden_state=entity_hidden_state.to(src_ids.device))
             loss = torch.mean(output.loss)
             return {'loss': loss}
@@ -303,6 +304,8 @@ class T5Finetuner(pl.LightningModule):
             self.dataset_idx = dataset_idx
             sep = batched_data['sep'][0]
             ent_ids, rel_ids = torch.squeeze(self.ent_rel[:, [0]]), torch.squeeze(self.ent_rel[:, [1]])
+            input_entity_ids = batched_data['input_entity_ids']
+            input_entity_mask = batched_data['input_entity_mask']
             entity_id_embed = self.ent_embed(ent_ids)
             if mode == 'head':
                 rel_id_embed = self.rel_embed(rel_ids + self.configs.n_rel)#32,1536
@@ -322,10 +325,10 @@ class T5Finetuner(pl.LightningModule):
                 addsource[:, int(sep[0]/2):int(sep[0]), :] = ent_id_embed_imag.unsqueeze(dim = 1).repeat(1, int(sep[0]) - int(sep[0]/2), 1)
                 addsource[:, int(sep[0] + 1):int((sep[0] + sep[1]) / 2), :] = rel_id_embed_real.unsqueeze(dim = 1).repeat(1, int((sep[0] + sep[1]) / 2) - int(sep[0] + 1), 1)
                 addsource[:, int((sep[0] + sep[1]) / 2):int(sep[1]), :] = rel_id_embed_imag.unsqueeze(dim = 1).repeat(1, int(sep[1]) - int((sep[0] + sep[1]) / 2), 1)
-            entity_hidden_state = torch.cat([entity_id_embed,rel_id_embed], dim = 1).view(src_ids.shape[0],4,-1).to(src_ids.device)
+            # entity_hidden_state = torch.cat([entity_id_embed,rel_id_embed], dim = 1).view(src_ids.shape[0],4,-1).to(src_ids.device)
 
-            addentity = torch.zeros([src_ids.shape[0],src_ids.shape[1]-4,entity_hidden_state.shape[-1]]).to(src_ids.device)
-            entity_hidden_state = torch.cat([entity_hidden_state,addentity],dim=1).to(src_ids.device)
+            # addentity = torch.zeros([src_ids.shape[0],src_ids.shape[1]-4,entity_hidden_state.shape[-1]]).to(src_ids.device)
+            # entity_hidden_state = torch.cat([entity_hidden_state,addentity],dim=1).to(src_ids.device)
 
             if dataset_idx == 0:
                 self.all_ground_truth = self.all_tail_ground_truth
@@ -338,7 +341,7 @@ class T5Finetuner(pl.LightningModule):
 
 
             # generated_text .type: list(str) .len: batch_size * num_beams
-            generated_text, scores_t5 = self.decode(src_ids, src_mask, batched_data, entity_hidden_state,addsource.to(src_ids.device))
+            generated_text, scores_t5 = self.decode(src_ids, src_mask, batched_data, input_entity_ids,input_entity_mask,addsource.to(src_ids.device))
             group_text = [generated_text[i:i + self.configs.num_beams] for i in range(0, len(generated_text), self.configs.num_beams)]
 
             #
@@ -399,7 +402,7 @@ class T5Finetuner(pl.LightningModule):
             out = {'ranks': ranks}
             return out
 
-    def decode(self, src_ids, src_mask, batched_data, entity_hidden_state,addsource):
+    def decode(self, src_ids, src_mask, batched_data, entity_hidden_state,input_entity_ids,input_entity_mask,addsource):
         def _extract(generated_text):
             if self.configs.tgt_descrip_max_length > 0:
                 compiler = re.compile(r'<extra_id_0>(.*?)\[')
@@ -480,7 +483,8 @@ class T5Finetuner(pl.LightningModule):
                                                                    prefix_allowed_tokens_fn=prefix_allowed_tokens_fn,
                                                                    num_beams=self.configs.num_beams,
                                                                    output_scores=True,
-                                                                   entity_hidden_state=entity_hidden_state.to(src_ids.device),
+                                                                   entity_hidden_state=input_entity_ids.to(src_ids.device),
+                                                                   entity_mask =input_entity_mask.to(src_ids.device),
                                                                    addsource=addsource,
                                                                    )
             raw_generated_text = self.trainer.datamodule.tokenizer.batch_decode(outputs.sequences)

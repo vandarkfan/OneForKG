@@ -17,6 +17,7 @@ class TrainDataset(Dataset):
         self.tgt_description_list = name_list_dict['tgt_description_list']
         self.ent_token_ids_in_trie = prefix_trie_dict['ent_token_ids_in_trie']
         self.neg_candidate_mask = prefix_trie_dict['neg_candidate_mask']
+        self.neigh = ground_truth_dict['neigh']
         self.mode = mode
 
     def __len__(self):
@@ -47,12 +48,14 @@ class TrainDataset(Dataset):
             else:
                 src = head_name + ' ' + head_descrip + ' | ' + rel_name + ' | ' + '<extra_id_0>'
             tgt = '<extra_id_0>' + tail_name + tail_target_descrip + '<extra_id_1>'
+            neigh = self.neigh[head]
         else:
             if self.configs.temporal:
                 src = '<extra_id_0>' + ' | ' + rel_name + ' | ' + tail_name + ' ' + tail_descrip + ' | ' + time
             else:
                 src = '<extra_id_0>' + ' | ' + rel_name + ' | ' + tail_name + ' ' + tail_descrip
             tgt = '<extra_id_0>' + head_name + head_target_descrip + '<extra_id_1>'
+            neigh = self.neigh[tail]
 
 
         tokenized_src = self.tokenizer(src, max_length=self.configs.src_max_length, truncation=True)
@@ -61,6 +64,27 @@ class TrainDataset(Dataset):
         tokenized_tgt = self.tokenizer(tgt, max_length=self.configs.train_tgt_max_length, truncation=True)
         target_ids = tokenized_tgt.input_ids
         target_mask = tokenized_tgt.attention_mask
+        hop2neigh = []
+        for i in neigh:
+            addneigh = self.neigh[i]
+            for j in addneigh:
+                hop2neigh.append(j)
+        fullneigh = [*neigh,*hop2neigh]
+        entity_neigh = ''
+        maxnumber = 5
+        count_number = 0
+        for i in fullneigh:
+            if mode == 'tail' and i!=tail:
+                entity_neigh = entity_neigh + str(self.original_ent_name_list[i]) + ' | '
+                count_number += 1
+            if mode == 'head' and i!=head:
+                entity_neigh = entity_neigh + str(self.original_ent_name_list[i]) + ' | '
+                count_number += 1
+            if count_number>=maxnumber:
+                break
+        tokenized_input_entity = self.tokenizer(entity_neigh, max_length=self.configs.src_max_length, truncation=True)
+        input_entity_ids = tokenized_input_entity.input_ids
+        input_entity_mask = tokenized_input_entity.attention_mask
         target_ent = torch.tensor(tail)
         if mode == 'tail':
             target_ent = torch.tensor(tail)
@@ -94,6 +118,8 @@ class TrainDataset(Dataset):
                 'mode':mode,
                 'target_ent': target_ent,
                 'sep': sep,
+                'input_entity_ids': input_entity_ids,
+                'input_entity_mask': input_entity_mask,
         }
 
         if self.configs.use_soft_prompt:
@@ -109,6 +135,8 @@ class TrainDataset(Dataset):
         agg_data['source_mask'] = batchify(data, 'source_mask', padding_value=0)
         agg_data['target_ids'] = batchify(data, 'target_ids', padding_value=0)
         agg_data['target_mask'] = batchify(data, 'target_mask', padding_value=0)
+        agg_data['input_entity_ids'] = batchify(data, 'input_entity_ids', padding_value=0)
+        agg_data['input_entity_mask'] = batchify(data, 'input_entity_mask', padding_value=0)
         agg_data['train_triple'] = batchify(data, 'train_triple', return_list=True)
         agg_data['ent_rel'] = batchify(data, 'ent_rel')
         agg_data['mode'] = [out['mode'] for out in data]
@@ -133,6 +161,7 @@ class TestDataset(Dataset):
         self.tgt_description_list = name_list_dict['tgt_description_list']
         self.ent_token_ids_in_trie = prefix_trie_dict['ent_token_ids_in_trie']
         self.tokenizer = tokenizer
+        self.neigh = ground_truth_dict['neigh']
         self.mode = mode
 
     def __len__(self):
@@ -157,12 +186,14 @@ class TestDataset(Dataset):
             else:
                 src = head_name + ' ' + head_descrip + ' | ' + rel_name + ' | ' + '<extra_id_0>'
             tgt_ids = tail
+            neigh = self.neigh[head]
         else:
             if self.configs.temporal:
                 src = '<extra_id_0>' + ' | ' + rel_name + ' | ' + tail_name + ' ' + tail_descrip + ' | ' + time
             else:
                 src = '<extra_id_0>' + ' | ' + rel_name + ' | ' + tail_name + ' ' + tail_descrip
             tgt_ids = head
+            neigh = self.neigh[tail]
 
         tokenized_src = self.tokenizer(src, max_length=self.configs.src_max_length, truncation=True)
         source_ids = tokenized_src.input_ids
@@ -172,6 +203,28 @@ class TestDataset(Dataset):
 
         # ent_rel = test_triple[[0, 2]] if self.mode == 'tail' else test_triple[[1, 2]]
         ent_rel = torch.LongTensor([head, rel]) if self.mode == 'tail' else torch.LongTensor([tail, rel])
+
+        hop2neigh = []
+        for i in neigh:
+            addneigh = self.neigh[i]
+            for j in addneigh:
+                hop2neigh.append(j)
+        fullneigh = [*neigh,*hop2neigh]
+        entity_neigh = ''
+        maxnumber = 5
+        count_number = 0
+        for i in fullneigh:
+            if self.mode == 'tail' and i!=tail:
+                entity_neigh = entity_neigh + str(self.original_ent_name_list[i]) + ' | '
+                count_number += 1
+            if self.mode == 'head' and i!=head:
+                entity_neigh = entity_neigh + str(self.original_ent_name_list[i]) + ' | '
+                count_number += 1
+            if count_number>=maxnumber:
+                break
+        tokenized_input_entity = self.tokenizer(entity_neigh, max_length=self.configs.src_max_length, truncation=True)
+        input_entity_ids = tokenized_input_entity.input_ids
+        input_entity_mask = tokenized_input_entity.attention_mask
 
         target_ent = torch.tensor(tail)
         if self.mode == 'tail':
@@ -205,6 +258,8 @@ class TestDataset(Dataset):
             'mode': self.mode,
             'target_ent': target_ent,
             'sep': sep,
+            'input_entity_ids': input_entity_ids,
+            'input_entity_mask': input_entity_mask,
         }
         if self.configs.use_soft_prompt:
             input_index, soft_prompt_index, _ = get_soft_prompt_pos(self.configs, source_ids, None, self.mode)
@@ -218,6 +273,8 @@ class TestDataset(Dataset):
         agg_data['source_mask'] = batchify(data, 'source_mask', padding_value=0)
         agg_data['source_names'] = [dt['source_names'] for dt in data]
         agg_data['target_names'] = [dt['target_names'] for dt in data]
+        agg_data['input_entity_ids'] = batchify(data, 'input_entity_ids', padding_value=0)
+        agg_data['input_entity_mask'] = batchify(data, 'input_entity_mask', padding_value=0)
         agg_data['test_triple'] = batchify(data, 'test_triple', return_list=True)
         agg_data['ent_rel'] = batchify(data, 'ent_rel')
         agg_data['mode'] = [out['mode'] for out in data]
@@ -244,12 +301,8 @@ class PretrainTrainDataset(Dataset):
         # train_triple = self.train_triples[index // 2]
         # mode = 'tail' if index % 2 == 0 else 'head'
         instance = self.train_list[index]
-        tokens_a, tokens_b, input_entity_id, word_subword = instance#poc是进到这里面了
-        pad_number = len(self.ent_name_list)
-        input_entity_id = input_entity_id + [pad_number]
+        src, tgt, input_entity_id = instance#poc是进到这里面了
 
-        src = ' '.join(tokens_a)
-        tgt = ' '.join(tokens_b)
         tokenized_src = self.tokenizer(src, max_length=self.configs.src_max_length, truncation=True)
         source_ids = tokenized_src.input_ids
         source_mask = tokenized_src.attention_mask
@@ -257,30 +310,23 @@ class PretrainTrainDataset(Dataset):
         target_ids = tokenized_tgt.input_ids
         target_mask = tokenized_tgt.attention_mask
 
-        n_pad = len(source_ids) - len(input_entity_id)
-        word_mask = [1] * len(input_entity_id)
-        word_mask.extend([0] * n_pad)
-        input_entity_id.extend([pad_number] * n_pad)
         out = {
                 'source_ids': source_ids,
                 'source_mask': source_mask,
                 'target_ids': target_ids,
                 'target_mask': target_mask,
-                'word_mask': word_mask,
                 'input_entity_id': input_entity_id,
         }
 
         return out
 
     def collate_fn(self, data):
-        pad_number = len(self.ent_name_list)
         agg_data = dict()
         agg_data['source_ids'] = batchify(data, 'source_ids', padding_value=0)
         agg_data['source_mask'] = batchify(data, 'source_mask', padding_value=0)
         agg_data['target_ids'] = batchify(data, 'target_ids', padding_value=0)
         agg_data['target_mask'] = batchify(data, 'target_mask', padding_value=0)
-        agg_data['word_mask'] = batchify(data, 'word_mask', padding_value=0)
-        agg_data['input_entity_id'] = batchify(data, 'input_entity_id', padding_value=pad_number)
+        agg_data['input_entity_id'] = [out['input_entity_id'] for out in data]
         if self.configs.use_soft_prompt:
             agg_data['input_index'] = batchify(data, 'input_index', padding_value=0)
             agg_data['soft_prompt_index'] = batchify(data, 'soft_prompt_index')
@@ -302,12 +348,8 @@ class PretrainTestDataset(Dataset):
 
     def __getitem__(self, index):
         instance = self.test_list[index]
-        tokens_a, tokens_b, input_entity_id, word_subword = instance  # poc是进到这里面了
-        pad_number = len(self.ent_name_list)
-        input_entity_id = input_entity_id + [pad_number]
+        src, tgt, input_entity_id = instance#poc是进到这里面了
 
-        src = ' '.join(tokens_a)
-        tgt = ' '.join(tokens_b)
         tokenized_src = self.tokenizer(src, max_length=self.configs.src_max_length, truncation=True)
         source_ids = tokenized_src.input_ids
         source_mask = tokenized_src.attention_mask
@@ -315,30 +357,25 @@ class PretrainTestDataset(Dataset):
         target_ids = tokenized_tgt.input_ids
         target_mask = tokenized_tgt.attention_mask
 
-        n_pad = len(source_ids) - len(input_entity_id)
-        word_mask = [1] * len(input_entity_id)
-        word_mask.extend([0] * n_pad)
-        input_entity_id.extend([pad_number] * n_pad)
         out = {
-            'source_ids': source_ids,
-            'source_mask': source_mask,
-            'target_ids': target_ids,
-            'target_mask': target_mask,
-            'word_mask': word_mask,
-            'input_entity_id': input_entity_id,
+                'source_ids': source_ids,
+                'source_mask': source_mask,
+                'target_ids': target_ids,
+                'target_mask': target_mask,
+                'input_entity_id': input_entity_id,
         }
+
+
 
         return out
 
     def collate_fn(self, data):
-        pad_number = len(self.ent_name_list)
         agg_data = dict()
         agg_data['source_ids'] = batchify(data, 'source_ids', padding_value=0)
         agg_data['source_mask'] = batchify(data, 'source_mask', padding_value=0)
         agg_data['target_ids'] = batchify(data, 'target_ids', padding_value=0)
         agg_data['target_mask'] = batchify(data, 'target_mask', padding_value=0)
-        agg_data['word_mask'] = batchify(data, 'word_mask', padding_value=0)
-        agg_data['input_entity_id'] = batchify(data, 'input_entity_id', padding_value=pad_number)
+        agg_data['input_entity_id'] = [out['input_entity_id'] for out in data]
         if self.configs.use_soft_prompt:
             agg_data['input_index'] = batchify(data, 'input_index', padding_value=0)
             agg_data['soft_prompt_index'] = batchify(data, 'soft_prompt_index')
@@ -353,48 +390,27 @@ class PretrainDataModule(pl.LightningDataModule):
         self.ground_truth_dict = ground_truth_dict
 
         self.tokenizer = T5Tokenizer.from_pretrained(configs.pretrained_model)
-        # self.train_both = None
         self.train= None
         self.valid= None
         self.test= None
-        self.ex_list = []
-        self.pretraining_num=50000
+        self.all_entity_des = []
         all_entity = self.name_list_dict['ent_name_list']
         entity_id = self.name_list_dict['entname2id']
-        while len(self.ex_list) < self.pretraining_num:  # 一共要400000次
-            src = sample(all_entity, 5)  # 随便找了五个实体
-            mask_num = randint(1,5)
-            src_entity_id = []
-            word_subword = []
-            src_tk = []
-            tgt_tk = []
-            masked_num = 0
-            for e_i, entity in enumerate(src):
-                # entity = entity.split(',')[0]
-                entity_tk = self.tokenizer.tokenize(entity)  # 分解成小的piece
-                src_entity_id.append(entity_id[entity])  # 实体id往里面去
-                word_subword.append(len(entity_tk))
-                if random() >= 0.5 and mask_num - masked_num > 0:
-                    src_tk.append('<extra_id_'+ str(masked_num) +'>')
-                    if masked_num==0:
-                        tgt_tk.append('<extra_id_'+ str(masked_num) +'> ' + entity + '<extra_id_'+ str(masked_num + 1) +'> ')
-                    else:
-                        tgt_tk.append( entity + '<extra_id_' + str(masked_num + 1) + '> ')
-                    masked_num += 1
-                else:
-                    src_tk.append(entity)
+        rel_id = self.name_list_dict['relname2id']
+        for i in range(len(all_entity)):
+            entity = all_entity[i]
+            des = self.name_list_dict['src_description_list'][i]
+            entity_des = 'The description of <extra_id_0> is that ' + des
+            tgt = '<extra_id_0>' + entity + '<extra_id_1>'
+            self.all_entity_des.append((entity_des, tgt, int(i)))
+        self.valid_entity = sample(self.all_entity_des, 2000)
+        self.test_entity = sample(self.all_entity_des, 2000)
 
-                    # for tk in entity_tk:
-                    #     src_tk.append(tk)
-                    #     tgt_tk.append(tk)
-            self.ex_list.append((src_tk, tgt_tk, src_entity_id, word_subword))
-        self.train_list = self.ex_list[:40000]
-        self.valid_list = self.ex_list[40000:45000]
-        self.test_list = self.ex_list[45000:]
+
     def prepare_data(self):
-        self.train = PretrainTrainDataset(self.configs, self.tokenizer, self.train_list, self.name_list_dict, self.ground_truth_dict,)
-        self.valid = PretrainTestDataset(self.configs, self.tokenizer, self.valid_list, self.name_list_dict, self.ground_truth_dict, )
-        self.test = PretrainTestDataset(self.configs, self.tokenizer, self.test_list, self.name_list_dict, self.ground_truth_dict, )
+        self.train = PretrainTrainDataset(self.configs, self.tokenizer, self.all_entity_des, self.name_list_dict, self.ground_truth_dict,)
+        self.valid = PretrainTestDataset(self.configs, self.tokenizer, self.valid_entity, self.name_list_dict, self.ground_truth_dict, )
+        self.test = PretrainTestDataset(self.configs, self.tokenizer, self.test_entity, self.name_list_dict, self.ground_truth_dict, )
     def train_dataloader(self):
         train_loader = DataLoader(self.train,
                                   batch_size=self.configs.batch_size,

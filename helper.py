@@ -76,8 +76,8 @@ def get_neighbor_truth(configs, triples):
             head, tail, rel, time = triple
         else:
             head, tail, rel = triple
-            neigh[head].append(tail + 2)
-            neigh[tail].append(head + 2)
+            neigh[head].append(tail)
+            neigh[tail].append(head)
     for i in neigh:
         neigh[i] = list(set(neigh[i]))
     return neigh

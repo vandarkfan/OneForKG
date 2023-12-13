@@ -326,7 +326,7 @@ class KGTXTFusion(nn.Module):
         return fusion_output
 
 class T5Attention(nn.Module):
-    def __init__(self, config: T5Config, has_relative_attention_bias=False,number_stack=0):
+    def __init__(self, config: T5Config, has_relative_attention_bias=False):
         super().__init__()
         self.is_decoder = config.is_decoder
         self.has_relative_attention_bias = has_relative_attention_bias
@@ -336,26 +336,13 @@ class T5Attention(nn.Module):
         self.n_heads = config.num_heads
         self.dropout = config.dropout_rate
         self.inner_dim = self.n_heads * self.key_value_proj_dim
-        self.number_stack = number_stack
         # Mesh TensorFlow initialization to avoid scaling before softmax
-        if config.is_decoder == False and self.number_stack >=6:
-            self.k = nn.Linear(self.d_model, int(self.d_model / 2), bias=False)
-            self.v = nn.Linear(self.d_model, int(self.d_model / 2), bias=False)
-            self.q = nn.Linear(self.d_model, int(self.d_model / 2), bias=False)
-            self.e = nn.Linear(self.d_model, int(self.d_model / 2), bias=False)
-            self.o = nn.Linear(self.inner_dim, self.d_model, bias=False)
-            # self.edge_proj = nn.Linear(self.d_model, self.d_model, bias=False)
-            # self.out_proj = nn.Linear(self.d_model, self.d_model, bias=False)
-            # self.attn_fc = nn.Linear(3 * (self.d_model / self.n_heads), 1, bias=False)
-            # self.conv1D = nn.Conv1d(self.d_model, self.d_model, kernel_size=2, stride=1, bias=False, padding=1)
-            # self.deconv1D = nn.ConvTranspose1d(self.d_model, self.d_model, kernel_size=2, stride=1, bias=False)
-        else:
-            self.q = nn.Linear(self.d_model, self.inner_dim, bias=False)
-            self.k = nn.Linear(self.d_model, self.inner_dim, bias=False)
-            self.v = nn.Linear(self.d_model, self.inner_dim, bias=False)
-            self.o = nn.Linear(self.inner_dim, self.d_model, bias=False)
+        self.q = nn.Linear(self.d_model, self.inner_dim, bias=False)
+        self.k = nn.Linear(self.d_model, self.inner_dim, bias=False)
+        self.v = nn.Linear(self.d_model, self.inner_dim, bias=False)
+        self.o = nn.Linear(self.inner_dim, self.d_model, bias=False)
 
-        # self.fusion = KGTXTFusion(config)
+        self.fusion = KGTXTFusion(config)
 
         if self.has_relative_attention_bias:
             self.relative_attention_bias = nn.Embedding(self.relative_attention_num_buckets, self.n_heads)
@@ -507,20 +494,12 @@ class T5Attention(nn.Module):
             return hidden_states
 
 
-        if self.is_decoder == False and self.number_stack >=6:
+        if self.is_decoder == False:
             # hidden_states = self.conv1D(hidden_states.transpose(1,2))[:,:,:seq_length].transpose(1,2)
-
             # hidden_states = self.conv1D(hidden_states.transpose(1,2))[:,:,:seq_length].transpose(1,2)
-            entity = self.e(entity_hidden_state)  # 【32，10，512】
-
             query_states = self.q(hidden_states)
             key_states = self.k(hidden_states)#[64,63,512]
             value_states = self.v(hidden_states)#[64,63,512]
-
-            query_states = torch.cat([query_states, entity],dim=2)
-            key_states = torch.cat([key_states, entity], dim=2)
-            value_states = torch.cat([value_states, entity], dim=2)
-
             query_states = shape(query_states)
             key_states = shape(key_states)
             value_states = shape(value_states)
@@ -583,8 +562,7 @@ class T5Attention(nn.Module):
 
         attn_output = unshape(torch.matmul(attn_weights, value_states))  # (batch_size, seq_length, dim)
         attn_output = self.o(attn_output)
-        fusion_output = None
-        # fusion_output = self.fusion(attn_output, entity_hidden_state) if entity_hidden_state is not None else None # add
+        fusion_output = self.fusion(attn_output, entity_hidden_state) if entity_hidden_state is not None else None # add
         present_key_value_state = (key_states, value_states) if (self.is_decoder and use_cache) else None
         outputs = (attn_output,) + (present_key_value_state,) + (position_bias,)
 
@@ -593,10 +571,11 @@ class T5Attention(nn.Module):
         return outputs,fusion_output,qks
 
 class KGAttention(nn.Module):
-    def __init__(self, config: T5Config):
+    def __init__(self, config: T5Config,has_relative_attention_bias = None):
         super().__init__()
         self.is_decoder = config.is_decoder
         self.relative_attention_num_buckets = config.relative_attention_num_buckets
+        self.has_relative_attention_bias = has_relative_attention_bias
         self.d_model = config.d_model
         self.key_value_proj_dim = config.d_kv
         self.n_heads = config.num_heads
@@ -607,7 +586,8 @@ class KGAttention(nn.Module):
         self.k = nn.Linear(self.d_model, self.inner_dim, bias=False)
         self.v = nn.Linear(self.d_model, self.inner_dim, bias=False)
         self.o = nn.Linear(self.inner_dim, self.d_model, bias=False)
-
+        if self.has_relative_attention_bias:
+            self.relative_attention_bias = nn.Embedding(self.relative_attention_num_buckets, self.n_heads)
         self.pruned_heads = set()
         self.gradient_checkpointing = False
 
@@ -770,6 +750,16 @@ class KGAttention(nn.Module):
             query_states, key_states.transpose(3, 2)#[64,8,63,63]
         )  # equivalent of torch.einsum("bnqd,bnkd->bnqk", query_states, key_states), compatible with onnx op>9
 
+        # if position_bias is None:
+        #     # encoder和decoder只在第一次进来，之后都不进来了
+        #     print()
+        #     position_bias = self.compute_bias(real_seq_length, key_length)  # 根据序列长度来搞了个[1,8,63,63]
+        #     # if key and values are already calculated
+        #     # we want only the last query position bias
+        #     if mask is not None:
+        #         position_bias = position_bias + mask  # (batch_size, n_heads, seq_length, key_length)
+        #
+        # scores += position_bias
 
         attn_weights = nn.functional.softmax(scores.float(), dim=-1).type_as(
             scores
@@ -794,34 +784,41 @@ class KGAttention(nn.Module):
         return outputs
 
 class KGBlock(nn.Module):
-    def __init__(self, config):
+    def __init__(self, config,has_relative_attention_bias=False):
         super().__init__()
         self.d_model = config.d_model
         self.inner_dim = config.d_model
-        # self.kgattention= KGAttention(config)
-        # self.layer_norm = T5LayerNorm(config.d_model, eps=config.layer_norm_epsilon)
-        # self.dropout = nn.Dropout(config.dropout_rate)
+        self.kgattention= KGAttention(config,has_relative_attention_bias = has_relative_attention_bias)
+        self.layer_norm = T5LayerNorm(config.d_model, eps=config.layer_norm_epsilon)
+        self.dropout = nn.Dropout(config.dropout_rate)
 
     def forward(
         self,
         text_past_key_values,
         entity_hidden_state,
+        position_bias = None,
+        mask=None,
+
     ):
-        # normed_entity_hidden_states = self.layer_norm(entity_hidden_state)
-        # attention_output = self.kgattention(
-        #     entity_hidden_state=normed_entity_hidden_states,
-        #     text_past_key_values=text_past_key_values,
-        # )
-        fusion_scores = torch.matmul(entity_hidden_state, text_past_key_values.transpose(-1, -2))  # bsz, 128, 49
-        fusion_probs = nn.Softmax(dim=-1)(fusion_scores)
-        fusion_output = torch.matmul(fusion_probs, text_past_key_values)
-        outputs = 0.3 * fusion_output + 0.7 * entity_hidden_state# add attentions if we output them
+        normed_entity_hidden_states = self.layer_norm(entity_hidden_state)
+        attention_output = self.kgattention(
+            entity_hidden_state=normed_entity_hidden_states,
+            text_past_key_values=text_past_key_values,
+            position_bias = position_bias,
+        )
+        entity_hidden_state = entity_hidden_state + self.dropout(attention_output[0])
+        # outputs = entity_hidden_state # add attentions if we output them
+        outputs = entity_hidden_state  # add attentions if we output them
+        # fusion_scores = torch.matmul(entity_hidden_state, text_past_key_values.transpose(-1, -2))  # bsz, 128, 49
+        # fusion_probs = nn.Softmax(dim=-1)(fusion_scores)
+        # fusion_output = torch.matmul(fusion_probs, text_past_key_values)
+        # outputs = 0.3 * fusion_output + 0.7 * entity_hidden_state# add attentions if we output them
         return outputs
 
 class T5LayerSelfAttention(nn.Module):
-    def __init__(self, config, has_relative_attention_bias=False,number_stack=0):
+    def __init__(self, config, has_relative_attention_bias=False):
         super().__init__()
-        self.SelfAttention = T5Attention(config, has_relative_attention_bias=has_relative_attention_bias, number_stack=number_stack)
+        self.SelfAttention = T5Attention(config, has_relative_attention_bias=has_relative_attention_bias)
         self.layer_norm = T5LayerNorm(config.d_model, eps=config.layer_norm_epsilon)
         self.dropout = nn.Dropout(config.dropout_rate)
         self.is_decoder = config.is_decoder
@@ -851,6 +848,7 @@ class T5LayerSelfAttention(nn.Module):
             entity_mask=entity_mask,
             output_qks=output_qks,
         )
+
         hidden_states = hidden_states + self.dropout(attention_output[0])
         outputs = (hidden_states,) + attention_output[1:]  # add attentions if we output them
         return outputs,fusion_output,qks
@@ -903,16 +901,16 @@ class KGT5Intermediate(nn.Module):
         if fusion_output is not None:
             # hidden_states = self.dense(hidden_states)
             # fusion_states = self.fusion_dense(fusion_output)
-            # fusion_states = self.intermediate_act_fn(fusion_states)
-            hidden_states = hidden_states + fusion_output
+            fusion_states = self.intermediate_act_fn(fusion_output)
+            hidden_states = hidden_states + fusion_states
         # hidden_states = self.intermediate_act_fn(hidden_states)
         return hidden_states
 class T5Block(nn.Module):
-    def __init__(self, config, has_relative_attention_bias=False,number_stack = 0):
+    def __init__(self, config, has_relative_attention_bias=False):
         super().__init__()
         self.is_decoder = config.is_decoder
         self.layer = nn.ModuleList()
-        self.layer.append(T5LayerSelfAttention(config, has_relative_attention_bias=has_relative_attention_bias,number_stack = number_stack))
+        self.layer.append(T5LayerSelfAttention(config, has_relative_attention_bias=has_relative_attention_bias))
         if self.is_decoder:
             self.layer.append(T5LayerCrossAttention(config))
         self.layer.append(T5LayerFF(config))
@@ -969,7 +967,7 @@ class T5Block(nn.Module):
 
         hidden_states, present_key_value_state = self_attention_outputs[:2]
         attention_outputs = self_attention_outputs[2:]  # Keep self-attention outputs and relative position weights
-        # hidden_states = self.kgtfusion(hidden_states,fusion_output)
+        hidden_states = self.kgtfusion(hidden_states,fusion_output)
         #[64,8,63,63]
         # clamp inf values to enable fp16 training
         if hidden_states.dtype == torch.float16 and torch.isinf(hidden_states).any():
@@ -1134,12 +1132,12 @@ class T5Stack(T5PreTrainedModel):
         self.is_decoder = config.is_decoder
 
         self.block = nn.ModuleList(
-            [T5Block(config, has_relative_attention_bias=bool(i == 0),number_stack = i) for i in range(config.num_layers)]
+            [T5Block(config, has_relative_attention_bias=bool(i == 0)) for i in range(config.num_layers)]
         )
-        # if self.is_decoder == False:
-        #     self.kgblock = nn.ModuleList(
-        #         [KGBlock(config) for i in range(config.num_layers)]
-        #     )
+        if self.is_decoder == False:
+            self.kgblock = nn.ModuleList(
+                [KGBlock(config, has_relative_attention_bias=bool(i == 0))  for i in range(3)]
+            )
         self.final_layer_norm = T5LayerNorm(config.d_model, eps=config.layer_norm_epsilon)
         self.dropout = nn.Dropout(config.dropout_rate)
 
@@ -1240,8 +1238,12 @@ class T5Stack(T5PreTrainedModel):
                 inputs_embeds = inputs_embeds + addsource
             else:
                 inputs_embeds = self.embed_tokens(input_ids)
-            # inputs_embeds = self.embed_tokens(input_ids)
-
+            if entity_hidden_state is not None and entity_mask is not None:
+                input_entity_shape = entity_hidden_state.size()
+                inputs_entity_embeds = self.embed_tokens(entity_hidden_state)
+                extended_attention_entity_mask = self.get_extended_attention_mask(entity_mask, input_entity_shape,
+                                                                   inputs_embeds.device)
+                inputs_entity_embeds = self.dropout(inputs_entity_embeds)
         batch_size, seq_length = input_shape
         # if self.is_decoder == False:
         #     seq_length = seq_length + 4
@@ -1292,7 +1294,7 @@ class T5Stack(T5PreTrainedModel):
         all_cross_attentions = () if (output_attentions and self.is_decoder) else None
         position_bias = None
         encoder_decoder_position_bias = None
-
+        position_neigh_bias = None
         hidden_states = self.dropout(inputs_embeds)
 
         for i, (layer_module, past_key_value) in enumerate(zip(self.block, past_key_values)):
@@ -1345,64 +1347,72 @@ class T5Stack(T5PreTrainedModel):
                     None,  # past_key_value is always None with gradient checkpointing
                 )
             else:
-                layer_outputs = layer_module(  # 到这里了
-                    hidden_states,  # 实际上是input or layer的嵌入
-                    attention_mask=extended_attention_mask,  # 编码器和解码器都有，编码器是个[64,1,1,59]，解码器是[64,1,29,29]
-                    position_bias=position_bias,
-                    encoder_hidden_states=encoder_hidden_states,  # 编码器出来的状态
-                    encoder_attention_mask=encoder_extended_attention_mask,  # 编码器没有，解码器有，是[64,1,1,59]
-                    encoder_decoder_position_bias=encoder_decoder_position_bias,
-                    layer_head_mask=layer_head_mask,
-                    cross_attn_layer_head_mask=cross_attn_layer_head_mask,
-                    past_key_value=past_key_value,
-                    use_cache=use_cache,
-                    output_attentions=output_attentions,
-                    entity_hidden_state=entity_hidden_state,
-                    entity_mask=entity_mask,
-                    output_qks=False,
-                )
-                # if self.is_decoder==False:
-                #     # text_past_key_values = layer_outputs[-1] if i >=7 else None
-                #     # entity_layer_output = entity_hidden_state if i ==0 else entity_layer_output
-                #     # entity_layer_output = self.kgblock[i](entity_hidden_state = entity_layer_output, text_past_key_values = text_past_key_values)
-                #     # entity_hidden_state = entity_layer_output if i >=7 else None
-                #     # output_qks = True if i >=6 else None
-                #
-                #     layer_outputs = layer_module(#到这里了
-                #         hidden_states,#实际上是input or layer的嵌入
-                #         attention_mask=extended_attention_mask,#编码器和解码器都有，编码器是个[64,1,1,59]，解码器是[64,1,29,29]
-                #         position_bias=position_bias,
-                #         encoder_hidden_states=encoder_hidden_states,#编码器出来的状态
-                #         encoder_attention_mask=encoder_extended_attention_mask,#编码器没有，解码器有，是[64,1,1,59]
-                #         encoder_decoder_position_bias=encoder_decoder_position_bias,
-                #         layer_head_mask=layer_head_mask,
-                #         cross_attn_layer_head_mask=cross_attn_layer_head_mask,
-                #         past_key_value=past_key_value,
-                #         use_cache=use_cache,
-                #         output_attentions=output_attentions,
-                #         entity_hidden_state=entity_hidden_state,
-                #         output_qks=False,
-                #     )
-                #     text_past_key_values = layer_outputs[0]
-                #     entity_layer_output = entity_hidden_state
-                #     entity_layer_output = self.kgblock[i](entity_hidden_state = entity_layer_output, text_past_key_values = text_past_key_values)
-                #     entity_hidden_state = entity_layer_output
-                # else:
-                #     layer_outputs = layer_module(  # 到这里了
-                #         hidden_states,  # 实际上是input or layer的嵌入
-                #         attention_mask=extended_attention_mask,  # 编码器和解码器都有，编码器是个[64,1,1,59]，解码器是[64,1,29,29]
-                #         position_bias=position_bias,
-                #         encoder_hidden_states=encoder_hidden_states,  # 编码器出来的状态
-                #         encoder_attention_mask=encoder_extended_attention_mask,  # 编码器没有，解码器有，是[64,1,1,59]
-                #         encoder_decoder_position_bias=encoder_decoder_position_bias,
-                #         layer_head_mask=layer_head_mask,
-                #         cross_attn_layer_head_mask=cross_attn_layer_head_mask,
-                #         past_key_value=past_key_value,
-                #         use_cache=use_cache,
-                #         output_attentions=output_attentions,
-                #         entity_hidden_state=None,
-                #         output_qks=False,
-                #     )
+                # layer_outputs = layer_module(  # 到这里了
+                #     hidden_states,  # 实际上是input or layer的嵌入
+                #     attention_mask=extended_attention_mask,  # 编码器和解码器都有，编码器是个[64,1,1,59]，解码器是[64,1,29,29]
+                #     position_bias=position_bias,
+                #     encoder_hidden_states=encoder_hidden_states,  # 编码器出来的状态
+                #     encoder_attention_mask=encoder_extended_attention_mask,  # 编码器没有，解码器有，是[64,1,1,59]
+                #     encoder_decoder_position_bias=encoder_decoder_position_bias,
+                #     layer_head_mask=layer_head_mask,
+                #     cross_attn_layer_head_mask=cross_attn_layer_head_mask,
+                #     past_key_value=past_key_value,
+                #     use_cache=use_cache,
+                #     output_attentions=output_attentions,
+                #     entity_hidden_state=entity_hidden_state,
+                #     entity_mask=entity_mask,
+                #     output_qks=False,
+                # )
+                if self.is_decoder==False:
+                    output_qks = True if i >=8 else None
+                    text_past_key_values = layer_outputs[-1] if i >=9 else None
+
+                    if i <9:
+                        entity_layer_output= None
+                    if i == 9:
+                        entity_layer_output= inputs_entity_embeds
+                    if i >=9:
+                        entity_layer_output = self.kgblock[self.config.num_layers - i-1](entity_hidden_state=entity_layer_output,
+                                                              mask=extended_attention_entity_mask,
+                                                              text_past_key_values=text_past_key_values,
+                                                              position_bias=position_neigh_bias)
+
+                    layer_outputs = layer_module(#到这里了
+                        hidden_states,#实际上是input or layer的嵌入
+                        attention_mask=extended_attention_mask,#编码器和解码器都有，编码器是个[64,1,1,59]，解码器是[64,1,29,29]
+                        position_bias=position_bias,
+                        encoder_hidden_states=encoder_hidden_states,#编码器出来的状态
+                        encoder_attention_mask=encoder_extended_attention_mask,#编码器没有，解码器有，是[64,1,1,59]
+                        encoder_decoder_position_bias=encoder_decoder_position_bias,
+                        layer_head_mask=layer_head_mask,
+                        cross_attn_layer_head_mask=cross_attn_layer_head_mask,
+                        past_key_value=past_key_value,
+                        use_cache=use_cache,
+                        output_attentions=output_attentions,
+                        entity_hidden_state=entity_layer_output,
+                        output_qks=output_qks,
+                    )
+
+                    # if i<=2:
+                    #     entity_layer_output = self.kgblock[i](entity_hidden_state = entity_layer_output, mask =extended_attention_entity_mask, text_past_key_values = text_past_key_values, position_bias = position_neigh_bias)
+                    # inputs_entity_embeds = entity_layer_output[0] if i <=2 else None
+
+                else:
+                    layer_outputs = layer_module(  # 到这里了
+                        hidden_states,  # 实际上是input or layer的嵌入
+                        attention_mask=extended_attention_mask,  # 编码器和解码器都有，编码器是个[64,1,1,59]，解码器是[64,1,29,29]
+                        position_bias=position_bias,
+                        encoder_hidden_states=encoder_hidden_states,  # 编码器出来的状态
+                        encoder_attention_mask=encoder_extended_attention_mask,  # 编码器没有，解码器有，是[64,1,1,59]
+                        encoder_decoder_position_bias=encoder_decoder_position_bias,
+                        layer_head_mask=layer_head_mask,
+                        cross_attn_layer_head_mask=cross_attn_layer_head_mask,
+                        past_key_value=past_key_value,
+                        use_cache=use_cache,
+                        output_attentions=output_attentions,
+                        entity_hidden_state=None,
+                        output_qks=False,
+                    )
             # layer_outputs is a tuple with:
             # hidden-states, key-value-states, (self-attention position bias), (self-attention weights), (cross-attention position bias), (cross-attention weights)
             if use_cache is False:

@@ -131,7 +131,8 @@ def main():
         model_path = checkpoint_callback.best_model_path
     else:
         if configs.istrain :
-            model = T5Finetuner.load_from_checkpoint(configs.model_path, strict=False, configs=configs, **kw_args)
+            # model = T5Finetuner.load_from_checkpoint(configs.model_path, strict=False, configs=configs, **kw_args)
+            model = T5Finetuner(configs, **kw_args)
             # model = T5Finetuner(configs, **kw_args)
             print('model construction done.', flush=True)
             trainer.fit(model, datamodule)
