@@ -49,6 +49,7 @@ class TrainDataset(Dataset):
                 src = head_name + ' ' + head_descrip + ' | ' + rel_name + ' | ' + '<extra_id_0>'
             tgt = '<extra_id_0>' + tail_name + tail_target_descrip + '<extra_id_1>'
             neigh = self.neigh[head]
+            neigh = [head,*neigh]
         else:
             if self.configs.temporal:
                 src = '<extra_id_0>' + ' | ' + rel_name + ' | ' + tail_name + ' ' + tail_descrip + ' | ' + time
@@ -56,7 +57,7 @@ class TrainDataset(Dataset):
                 src = '<extra_id_0>' + ' | ' + rel_name + ' | ' + tail_name + ' ' + tail_descrip
             tgt = '<extra_id_0>' + head_name + head_target_descrip + '<extra_id_1>'
             neigh = self.neigh[tail]
-
+            neigh = [tail, *neigh]
 
         tokenized_src = self.tokenizer(src, max_length=self.configs.src_max_length, truncation=True)
         source_ids = tokenized_src.input_ids
@@ -70,21 +71,8 @@ class TrainDataset(Dataset):
             for j in addneigh:
                 hop2neigh.append(j)
         fullneigh = [*neigh,*hop2neigh]
-        entity_neigh = ''
-        maxnumber = 5
-        count_number = 0
-        for i in fullneigh:
-            if mode == 'tail' and i!=tail:
-                entity_neigh = entity_neigh + str(self.original_ent_name_list[i]) + ' | '
-                count_number += 1
-            if mode == 'head' and i!=head:
-                entity_neigh = entity_neigh + str(self.original_ent_name_list[i]) + ' | '
-                count_number += 1
-            if count_number>=maxnumber:
-                break
-        tokenized_input_entity = self.tokenizer(entity_neigh, max_length=self.configs.src_max_length, truncation=True)
-        input_entity_ids = tokenized_input_entity.input_ids
-        input_entity_mask = tokenized_input_entity.attention_mask
+        fullneigh = fullneigh[:len(source_ids)]
+
         target_ent = torch.tensor(tail)
         if mode == 'tail':
             target_ent = torch.tensor(tail)
@@ -118,8 +106,7 @@ class TrainDataset(Dataset):
                 'mode':mode,
                 'target_ent': target_ent,
                 'sep': sep,
-                'input_entity_ids': input_entity_ids,
-                'input_entity_mask': input_entity_mask,
+                'fullneigh': fullneigh,
         }
 
         if self.configs.use_soft_prompt:
@@ -135,14 +122,12 @@ class TrainDataset(Dataset):
         agg_data['source_mask'] = batchify(data, 'source_mask', padding_value=0)
         agg_data['target_ids'] = batchify(data, 'target_ids', padding_value=0)
         agg_data['target_mask'] = batchify(data, 'target_mask', padding_value=0)
-        agg_data['input_entity_ids'] = batchify(data, 'input_entity_ids', padding_value=0)
-        agg_data['input_entity_mask'] = batchify(data, 'input_entity_mask', padding_value=0)
         agg_data['train_triple'] = batchify(data, 'train_triple', return_list=True)
         agg_data['ent_rel'] = batchify(data, 'ent_rel')
         agg_data['mode'] = [out['mode'] for out in data]
         agg_data['target_ent'] = [out['target_ent'] for out in data]
         agg_data['sep'] = [out['sep'] for out in data]
-
+        agg_data['fullneigh'] = [out['fullneigh'] for out in data]
         if self.configs.use_soft_prompt:
             agg_data['input_index'] = batchify(data, 'input_index', padding_value=0)
             agg_data['soft_prompt_index'] = batchify(data, 'soft_prompt_index')
@@ -187,6 +172,7 @@ class TestDataset(Dataset):
                 src = head_name + ' ' + head_descrip + ' | ' + rel_name + ' | ' + '<extra_id_0>'
             tgt_ids = tail
             neigh = self.neigh[head]
+            neigh = [head, *neigh]
         else:
             if self.configs.temporal:
                 src = '<extra_id_0>' + ' | ' + rel_name + ' | ' + tail_name + ' ' + tail_descrip + ' | ' + time
@@ -194,6 +180,7 @@ class TestDataset(Dataset):
                 src = '<extra_id_0>' + ' | ' + rel_name + ' | ' + tail_name + ' ' + tail_descrip
             tgt_ids = head
             neigh = self.neigh[tail]
+            neigh = [tail, *neigh]
 
         tokenized_src = self.tokenizer(src, max_length=self.configs.src_max_length, truncation=True)
         source_ids = tokenized_src.input_ids
@@ -210,21 +197,22 @@ class TestDataset(Dataset):
             for j in addneigh:
                 hop2neigh.append(j)
         fullneigh = [*neigh,*hop2neigh]
-        entity_neigh = ''
-        maxnumber = 5
-        count_number = 0
-        for i in fullneigh:
-            if self.mode == 'tail' and i!=tail:
-                entity_neigh = entity_neigh + str(self.original_ent_name_list[i]) + ' | '
-                count_number += 1
-            if self.mode == 'head' and i!=head:
-                entity_neigh = entity_neigh + str(self.original_ent_name_list[i]) + ' | '
-                count_number += 1
-            if count_number>=maxnumber:
-                break
-        tokenized_input_entity = self.tokenizer(entity_neigh, max_length=self.configs.src_max_length, truncation=True)
-        input_entity_ids = tokenized_input_entity.input_ids
-        input_entity_mask = tokenized_input_entity.attention_mask
+        fullneigh = fullneigh[:len(source_ids)]
+        # entity_neigh = ''
+        # maxnumber = 5
+        # count_number = 0
+        # for i in fullneigh:
+        #     if self.mode == 'tail' and i!=tail:
+        #         entity_neigh = entity_neigh + str(self.original_ent_name_list[i]) + ' | '
+        #         count_number += 1
+        #     if self.mode == 'head' and i!=head:
+        #         entity_neigh = entity_neigh + str(self.original_ent_name_list[i]) + ' | '
+        #         count_number += 1
+        #     if count_number>=maxnumber:
+        #         break
+        # tokenized_input_entity = self.tokenizer(entity_neigh, max_length=self.configs.src_max_length, truncation=True)
+        # input_entity_ids = tokenized_input_entity.input_ids
+        # input_entity_mask = tokenized_input_entity.attention_mask
 
         target_ent = torch.tensor(tail)
         if self.mode == 'tail':
@@ -258,8 +246,7 @@ class TestDataset(Dataset):
             'mode': self.mode,
             'target_ent': target_ent,
             'sep': sep,
-            'input_entity_ids': input_entity_ids,
-            'input_entity_mask': input_entity_mask,
+            'fullneigh': fullneigh,
         }
         if self.configs.use_soft_prompt:
             input_index, soft_prompt_index, _ = get_soft_prompt_pos(self.configs, source_ids, None, self.mode)
@@ -273,8 +260,7 @@ class TestDataset(Dataset):
         agg_data['source_mask'] = batchify(data, 'source_mask', padding_value=0)
         agg_data['source_names'] = [dt['source_names'] for dt in data]
         agg_data['target_names'] = [dt['target_names'] for dt in data]
-        agg_data['input_entity_ids'] = batchify(data, 'input_entity_ids', padding_value=0)
-        agg_data['input_entity_mask'] = batchify(data, 'input_entity_mask', padding_value=0)
+        agg_data['fullneigh'] = [out['fullneigh'] for out in data]
         agg_data['test_triple'] = batchify(data, 'test_triple', return_list=True)
         agg_data['ent_rel'] = batchify(data, 'ent_rel')
         agg_data['mode'] = [out['mode'] for out in data]

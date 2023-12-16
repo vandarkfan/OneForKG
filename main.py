@@ -153,7 +153,7 @@ if __name__ == '__main__':
     parser.add_argument('-model', default='T5Finetuner', help='Model Name')
     parser.add_argument('-gpu', type=str, default='0', help='Set GPU Ids : Eg: For CPU = -1, For Single GPU = 0')
     parser.add_argument('-seed', dest='seed', default=41504, type=int, help='Seed for randomization')
-    parser.add_argument('-num_workers', type=int, default=4, help='Number of processes to construct batches')
+    parser.add_argument('-num_workers', type=int, default=0, help='Number of processes to construct batches')
     parser.add_argument('-save_dir', type=str, default='', help='')
     parser.add_argument('-pretrainKG', type=int, default=0, help='')
     parser.add_argument('-istrain', type=int, default=0, help='')

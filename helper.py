@@ -76,8 +76,8 @@ def get_neighbor_truth(configs, triples):
             head, tail, rel, time = triple
         else:
             head, tail, rel = triple
-            neigh[head].append(tail)
-            neigh[tail].append(head)
+            neigh[head].append(torch.tensor(tail).type(torch.int))
+            neigh[tail].append(torch.tensor(head).type(torch.int))
     for i in neigh:
         neigh[i] = list(set(neigh[i]))
     return neigh
