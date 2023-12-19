@@ -346,7 +346,7 @@ class T5Attention(nn.Module):
 
         if self.has_relative_attention_bias:
             self.relative_attention_bias = nn.Embedding(self.relative_attention_num_buckets, self.n_heads)
-            self.entity_embedding = nn.Embedding(40943, self.n_heads)
+            # self.entity_embedding = nn.Embedding(40943, self.n_heads)
         self.pruned_heads = set()
         self.gradient_checkpointing = False
 
@@ -446,6 +446,7 @@ class T5Attention(nn.Module):
         entity_hidden_state=None,
         entity_mask=None,
         output_qks=None,
+        sep=None,
     ):
         """
         Self-attention (if key_value_states is None) or attention over source sentence (provided by key_value_states).
@@ -544,15 +545,30 @@ class T5Attention(nn.Module):
                 # print(position_bias.shape)#1,12,68,68    1,12,27,27    1,12,27,68
                 # print(mask.shape)#32,1,1,68     32,1,27,27      32,1,1,68
 
-
-                if self.is_decoder == False and entity_hidden_state is not None:
-                    entity_position = torch.zeros([mask.shape[0],self.n_heads,1,position_bias.shape[3]]).to(query_states.device)
-                    for i in range(len(entity_hidden_state)):
-                        a = torch.Tensor(entity_hidden_state[i]).type(torch.int).to(query_states.device)
-                        a = self.entity_embedding(a).transpose(0, 1)
-                        entity_position[i, :, 0, :a.shape[1]] = a
-                    position_bias = position_bias + entity_position
-
+                # if self.is_decoder == False and entity_hidden_state is not None and sep is not None:
+                #     kg_position = torch.zeros([batch_size, self.n_heads, position_bias.shape[2], position_bias.shape[3]]).to(
+                #         query_states.device)
+                #     if sep[0][2]==-1:#tail
+                #         for i in range(batch_size):
+                #             e_bias_pos = position_bias[0,:,:int(sep[i][0]),:int(sep[i][0])].contiguous().view(self.n_heads, -1).transpose(0, 1)
+                #             r_bias_pos = position_bias[0,:,int(sep[i][0]+1):int(sep[i][1]),int(sep[i][0]+1):int(sep[i][1])].contiguous().view(self.n_heads, -1).transpose(0, 1)
+                #             entity_embed = entity_hidden_state[i,0,:].view(self.n_heads, -1).transpose(0, 1)
+                #             relation_embed = entity_hidden_state[i,1,:].view(self.n_heads, -1).transpose(0, 1)
+                #             e_output = self.fusion(e_bias_pos, entity_embed).transpose(0, 1).contiguous().view(self.n_heads, int(sep[i][0]),int(sep[i][0]))
+                #             r_output = self.fusion(r_bias_pos, relation_embed).transpose(0, 1).contiguous().view(self.n_heads, int(sep[i][1]-sep[i][0]-1),int(sep[i][1]-sep[i][0]-1))
+                #             kg_position[i,:,:int(sep[i][0]),:int(sep[i][0])] = e_output
+                #             kg_position[i, :, int(sep[i][0]+1):int(sep[i][1]),int(sep[i][0]+1):int(sep[i][1])] = r_output
+                #     else:#head
+                #         for i in range(batch_size):
+                #             e_bias_pos = position_bias[0,:,int(sep[i][1]+1):int(sep[i][2]),int(sep[i][1]+1):int(sep[i][2])].contiguous().view(self.n_heads, -1).transpose(0, 1)
+                #             r_bias_pos = position_bias[0,:,int(sep[i][0]+1):int(sep[i][1]),int(sep[i][0]+1):int(sep[i][1])].contiguous().view(self.n_heads, -1).transpose(0, 1)
+                #             entity_embed = entity_hidden_state[i,0,:].view(self.n_heads, -1).transpose(0, 1)
+                #             relation_embed = entity_hidden_state[i,1,:].view(self.n_heads, -1).transpose(0, 1)
+                #             e_output = self.fusion(e_bias_pos, entity_embed).transpose(0, 1).contiguous().view(self.n_heads, int(sep[i][2] - sep[i][1] -1),int(sep[i][2] - sep[i][1] -1))
+                #             r_output = self.fusion(r_bias_pos, relation_embed).transpose(0, 1).contiguous().view(self.n_heads, int(sep[i][1]-sep[i][0]-1),int(sep[i][1]-sep[i][0]-1))
+                #             kg_position[i,:,int(sep[i][1]+1):int(sep[i][2]),int(sep[i][1]+1):int(sep[i][2])] = e_output
+                #             kg_position[i, :, int(sep[i][0]+1):int(sep[i][1]),int(sep[i][0]+1):int(sep[i][1])] = r_output
+                #     position_bias = position_bias + kg_position
                 position_bias = position_bias + mask  # (batch_size, n_heads, seq_length, key_length)
                 # if self.is_decoder:
                 #     position_bias = position_bias + mask  # (batch_size, n_heads, seq_length, key_length)
@@ -849,6 +865,7 @@ class T5LayerSelfAttention(nn.Module):
         entity_hidden_state=None,
         entity_mask=None,
         output_qks=None,
+        sep=None,
     ):
         normed_hidden_states = self.layer_norm(hidden_states)
         attention_output, fusion_output, qks = self.SelfAttention(
@@ -862,6 +879,7 @@ class T5LayerSelfAttention(nn.Module):
             entity_hidden_state=entity_hidden_state,
             entity_mask=entity_mask,
             output_qks=output_qks,
+            sep=sep,
         )
 
         hidden_states = hidden_states + self.dropout(attention_output[0])
@@ -947,6 +965,7 @@ class T5Block(nn.Module):
         entity_hidden_state=None,
         output_qks=None,
         entity_mask=None,
+        sep=None,
     ):
 
         if past_key_value is not None:
@@ -978,6 +997,7 @@ class T5Block(nn.Module):
             entity_hidden_state=entity_hidden_state,
             entity_mask=entity_mask,
             output_qks=output_qks,
+            sep=sep,
         )
 
         hidden_states, present_key_value_state = self_attention_outputs[:2]
@@ -1219,6 +1239,7 @@ class T5Stack(T5PreTrainedModel):
         entity_hidden_state=None,
         addsource=None,
         entity_mask=None,
+        sep=None,
 
     ):
         # Model parallel
@@ -1372,6 +1393,7 @@ class T5Stack(T5PreTrainedModel):
                     entity_hidden_state=entity_hidden_state,
                     entity_mask=entity_mask,
                     output_qks=False,
+                    sep= sep,
                 )
 
             # layer_outputs is a tuple with:

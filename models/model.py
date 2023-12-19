@@ -39,7 +39,7 @@ class T5Finetuner(pl.LightningModule):
         self.rel_embed.weight.requires_grad = False
         self.w = 0.01
         self.prompt_dim = checkpoint['rel_embed'].shape[-1]
-
+        #
         # self.prompt_dim = self.T5ForConditionalGeneration.model_dim * 2
         # self.ent_embed = nn.Embedding(self.configs.n_ent, self.prompt_dim)
         # self.rel_embed = nn.Embedding(self.configs.n_rel * 2, self.prompt_dim)
@@ -92,6 +92,7 @@ class T5Finetuner(pl.LightningModule):
         target_mask = batched_data['target_mask']
         fullneigh= batched_data['fullneigh']
         sep = batched_data['sep'][0]
+        sep_positon = batched_data['sep']
         labels = target_ids.clone()
         labels[labels[:, :] == self.trainer.datamodule.tokenizer.pad_token_id] = -100
         # train_triples .shape: (batch_size, 3)
@@ -102,11 +103,33 @@ class T5Finetuner(pl.LightningModule):
         ent_ids, rel_ids = torch.squeeze(ent_rel[:, [0]]), torch.squeeze(ent_rel[:, [1]])
         target_entity = torch.tensor(batched_data['target_ent']).to(src_ids.device)
         entity_id_embed = self.ent_embed(ent_ids)
+
         # if mode == 'head':
         #     rel_id_embed = self.rel_embed(rel_ids + self.configs.n_rel)  # 32,1536
+        #     rel_id_embed_real, rel_id_embed_imag = rel_id_embed[:, :int(self.prompt_dim / 2)], rel_id_embed[:,
+        #                                                                                        int(self.prompt_dim / 2):]
+        #     ent_id_embed_real, ent_id_embed_imag = entity_id_embed[:, :int(self.prompt_dim / 2)], entity_id_embed[:,
+        #                                                                                           int(self.prompt_dim / 2):]
+        #     addsource = torch.zeros(
+        #         [batched_data['source_ids'].shape[0], batched_data['source_ids'].shape[1], int(self.prompt_dim / 2)])
+        #     for i in range(len(sep)):
+        #         addsource[i, int(sep[i][0] +1):int((sep[i][0] + sep[i][1])/2), :] = rel_id_embed_real[i].unsqueeze(dim = 0).repeat(int((sep[i][0] + sep[i][1])/2) - int(sep[i][0] +1), 1)
+        #         addsource[i, int((sep[i][0] + sep[i][1])/2):int(sep[i][1]), :] = rel_id_embed_imag[i].unsqueeze(dim = 0).repeat(int(sep[i][1]) - int((sep[i][0] + sep[i][1])/2), 1)
+        #         addsource[i, int(sep[i][1] + 1):int((sep[i][1] + sep[i][2]) / 2), :] = ent_id_embed_real[i].unsqueeze(dim = 0).repeat(int((sep[i][1] + sep[i][2]) / 2) - int(sep[i][1] + 1), 1)
+        #         addsource[i, int((sep[i][1] + sep[i][2]) / 2):int(sep[i][2]), :] = ent_id_embed_imag[i].unsqueeze(dim = 0).repeat(int(sep[i][2]) - int((sep[i][1] + sep[i][2]) / 2), 1)
         # else:
         #     rel_id_embed = self.rel_embed(rel_ids)
-
+        #     rel_id_embed_real, rel_id_embed_imag = rel_id_embed[:, :int(self.prompt_dim / 2)], rel_id_embed[:,
+        #                                                                                        int(self.prompt_dim / 2):]
+        #     ent_id_embed_real, ent_id_embed_imag = entity_id_embed[:, :int(self.prompt_dim / 2)], entity_id_embed[:,
+        #                                                                                           int(self.prompt_dim / 2):]
+        #     addsource = torch.zeros(
+        #         [batched_data['source_ids'].shape[0], batched_data['source_ids'].shape[1], int(self.prompt_dim / 2)])
+        #     for i in range(len(sep)):
+        #         addsource[i, :int(sep[i][0]/2), :] = ent_id_embed_real[i].unsqueeze(dim = 0).repeat(int(sep[i][0]/2), 1)
+        #         addsource[i, int(sep[i][0]/2):int(sep[i][0]), :] = ent_id_embed_imag[i].unsqueeze(dim = 0).repeat(int(sep[i][0]) - int(sep[i][0]/2), 1)
+        #         addsource[i, int(sep[i][0] + 1):int((sep[i][0] + sep[i][1]) / 2), :] = rel_id_embed_real[i].unsqueeze(dim = 0).repeat(int((sep[i][0] + sep[i][1]) / 2) - int(sep[i][0] + 1), 1)
+        #         addsource[i, int((sep[i][0] + sep[i][1]) / 2):int(sep[i][1]), :] = rel_id_embed_imag[i].unsqueeze(dim = 0).repeat(int(sep[i][1]) - int((sep[i][0] + sep[i][1]) / 2), 1)
         if mode == 'head':
             rel_id_embed = self.rel_embed(rel_ids + self.configs.n_rel)#32,1536
             rel_id_embed_real, rel_id_embed_imag = rel_id_embed[:, :int(self.prompt_dim/2)], rel_id_embed[:, int(self.prompt_dim/2):]
@@ -126,8 +149,7 @@ class T5Finetuner(pl.LightningModule):
             addsource[:, int(sep[0]/2):int(sep[0]), :] = ent_id_embed_imag.unsqueeze(dim = 1).repeat(1, int(sep[0]) - int(sep[0]/2), 1)
             addsource[:, int(sep[0] + 1):int((sep[0] + sep[1]) / 2), :] = rel_id_embed_real.unsqueeze(dim = 1).repeat(1, int((sep[0] + sep[1]) / 2) - int(sep[0] + 1), 1)
             addsource[:, int((sep[0] + sep[1]) / 2):int(sep[1]), :] = rel_id_embed_imag.unsqueeze(dim = 1).repeat(1, int(sep[1]) - int((sep[0] + sep[1]) / 2), 1)
-        entity_hidden_state = torch.cat([entity_id_embed,rel_id_embed], dim = 1).view(target_ids.shape[0],4,-1).to(src_ids.device)
-
+        entity_hidden_state = torch.cat([entity_id_embed, rel_id_embed], dim=1).view(target_ids.shape[0],2,-1).to(src_ids.device)
 
         if self.configs.use_soft_prompt:
             # input_index .shape: (batch_size, seq_len + 4)
@@ -168,7 +190,7 @@ class T5Finetuner(pl.LightningModule):
                                                      output_hidden_states=True)
         else:
             output = self.T5ForConditionalGeneration(input_ids=src_ids, attention_mask=src_mask, labels=labels,
-                                                     entity_hidden_state=fullneigh,addsource =addsource.to(src_ids.device))
+                                                     entity_hidden_state=entity_hidden_state,addsource =addsource.to(src_ids.device),sep =sep_positon)
         loss = torch.mean(output.loss)
 
         # ent = output.encoder_last_hidden_state[:,:2,:].view(batched_data['source_ids'].shape[0],-1)
@@ -293,8 +315,43 @@ class T5Finetuner(pl.LightningModule):
             mode = batched_data['mode']
             self.dataset_idx = dataset_idx
             sep = batched_data['sep'][0]
+            sep_positon = batched_data['sep']
             ent_ids, rel_ids = torch.squeeze(self.ent_rel[:, [0]]), torch.squeeze(self.ent_rel[:, [1]])
             entity_id_embed = self.ent_embed(ent_ids)
+
+            # if mode == 'head':
+            #     rel_id_embed = self.rel_embed(rel_ids + self.configs.n_rel)  # 32,1536
+            #     rel_id_embed_real, rel_id_embed_imag = rel_id_embed[:, :int(self.prompt_dim / 2)], rel_id_embed[:,
+            #                                                                                        int(self.prompt_dim / 2):]
+            #     ent_id_embed_real, ent_id_embed_imag = entity_id_embed[:, :int(self.prompt_dim / 2)], entity_id_embed[:,
+            #                                                                                           int(self.prompt_dim / 2):]
+            #     addsource = torch.zeros(
+            #         [batched_data['source_ids'].shape[0], batched_data['source_ids'].shape[1], int(self.prompt_dim / 2)])
+            #     for i in range(len(sep)):
+            #         addsource[i, int(sep[i][0] + 1):int((sep[i][0] + sep[i][1]) / 2), :] = rel_id_embed_real[i].unsqueeze(
+            #             dim=0).repeat(int((sep[i][0] + sep[i][1]) / 2) - int(sep[i][0] + 1), 1)
+            #         addsource[i, int((sep[i][0] + sep[i][1]) / 2):int(sep[i][1]), :] = rel_id_embed_imag[i].unsqueeze(
+            #             dim=0).repeat(int(sep[i][1]) - int((sep[i][0] + sep[i][1]) / 2), 1)
+            #         addsource[i, int(sep[i][1] + 1):int((sep[i][1] + sep[i][2]) / 2), :] = ent_id_embed_real[i].unsqueeze(
+            #             dim=0).repeat(int((sep[i][1] + sep[i][2]) / 2) - int(sep[i][1] + 1), 1)
+            #         addsource[i, int((sep[i][1] + sep[i][2]) / 2):int(sep[i][2]), :] = ent_id_embed_imag[i].unsqueeze(
+            #             dim=0).repeat(int(sep[i][2]) - int((sep[i][1] + sep[i][2]) / 2), 1)
+            # else:
+            #     rel_id_embed = self.rel_embed(rel_ids)
+            #     rel_id_embed_real, rel_id_embed_imag = rel_id_embed[:, :int(self.prompt_dim / 2)], rel_id_embed[:,
+            #                                                                                        int(self.prompt_dim / 2):]
+            #     ent_id_embed_real, ent_id_embed_imag = entity_id_embed[:, :int(self.prompt_dim / 2)], entity_id_embed[:,
+            #                                                                                           int(self.prompt_dim / 2):]
+            #     addsource = torch.zeros(
+            #         [batched_data['source_ids'].shape[0], batched_data['source_ids'].shape[1], int(self.prompt_dim / 2)])
+            #     for i in range(len(sep)):
+            #         addsource[i, :int(sep[i][0] / 2), :] = ent_id_embed_real[i].unsqueeze(dim=0).repeat(int(sep[i][0] / 2), 1)
+            #         addsource[i, int(sep[i][0] / 2):int(sep[i][0]), :] = ent_id_embed_imag[i].unsqueeze(dim=0).repeat(
+            #             int(sep[i][0]) - int(sep[i][0] / 2), 1)
+            #         addsource[i, int(sep[i][0] + 1):int((sep[i][0] + sep[i][1]) / 2), :] = rel_id_embed_real[i].unsqueeze(
+            #             dim=0).repeat(int((sep[i][0] + sep[i][1]) / 2) - int(sep[i][0] + 1), 1)
+            #         addsource[i, int((sep[i][0] + sep[i][1]) / 2):int(sep[i][1]), :] = rel_id_embed_imag[i].unsqueeze(
+            #             dim=0).repeat(int(sep[i][1]) - int((sep[i][0] + sep[i][1]) / 2), 1)
             if mode == 'head':
                 rel_id_embed = self.rel_embed(rel_ids + self.configs.n_rel)#32,1536
                 rel_id_embed_real, rel_id_embed_imag = rel_id_embed[:, :int(self.prompt_dim/2)], rel_id_embed[:, int(self.prompt_dim/2):]
@@ -304,6 +361,7 @@ class T5Finetuner(pl.LightningModule):
                 addsource[:, int((sep[0] + sep[1])/2):int(sep[1]), :] = rel_id_embed_imag.unsqueeze(dim = 1).repeat(1, int(sep[1]) - int((sep[0] + sep[1])/2), 1)
                 addsource[:, int(sep[1] + 1):int((sep[1] + sep[2]) / 2), :] = ent_id_embed_real.unsqueeze(dim = 1).repeat(1, int((sep[1] + sep[2]) / 2) - int(sep[1] + 1), 1)
                 addsource[:, int((sep[1] + sep[2]) / 2):int(sep[2]), :] = ent_id_embed_imag.unsqueeze(dim = 1).repeat(1, int(sep[2]) - int((sep[1] + sep[2]) / 2), 1)
+
             else:
                 rel_id_embed = self.rel_embed(rel_ids)
                 rel_id_embed_real, rel_id_embed_imag = rel_id_embed[:, :int(self.prompt_dim/2)], rel_id_embed[:, int(self.prompt_dim/2):]
@@ -313,8 +371,7 @@ class T5Finetuner(pl.LightningModule):
                 addsource[:, int(sep[0]/2):int(sep[0]), :] = ent_id_embed_imag.unsqueeze(dim = 1).repeat(1, int(sep[0]) - int(sep[0]/2), 1)
                 addsource[:, int(sep[0] + 1):int((sep[0] + sep[1]) / 2), :] = rel_id_embed_real.unsqueeze(dim = 1).repeat(1, int((sep[0] + sep[1]) / 2) - int(sep[0] + 1), 1)
                 addsource[:, int((sep[0] + sep[1]) / 2):int(sep[1]), :] = rel_id_embed_imag.unsqueeze(dim = 1).repeat(1, int(sep[1]) - int((sep[0] + sep[1]) / 2), 1)
-            entity_hidden_state = torch.cat([entity_id_embed,rel_id_embed], dim = 1).view(src_ids.shape[0],4,-1).to(src_ids.device)
-
+            entity_hidden_state = torch.cat([entity_id_embed, rel_id_embed], dim=1).view(src_ids.shape[0],2,-1).to(src_ids.device)
             # addentity = torch.zeros([src_ids.shape[0],src_ids.shape[1]-4,entity_hidden_state.shape[-1]]).to(src_ids.device)
             # entity_hidden_state = torch.cat([entity_hidden_state,addentity],dim=1).to(src_ids.device)
 
@@ -329,7 +386,7 @@ class T5Finetuner(pl.LightningModule):
 
 
             # generated_text .type: list(str) .len: batch_size * num_beams
-            generated_text, scores_t5 = self.decode(src_ids, src_mask, batched_data, fullneigh, addsource.to(src_ids.device))
+            generated_text, scores_t5 = self.decode(src_ids, src_mask, batched_data, entity_hidden_state, addsource.to(src_ids.device),sep =sep_positon)
             group_text = [generated_text[i:i + self.configs.num_beams] for i in range(0, len(generated_text), self.configs.num_beams)]
 
             #
@@ -390,7 +447,7 @@ class T5Finetuner(pl.LightningModule):
             out = {'ranks': ranks}
             return out
 
-    def decode(self, src_ids, src_mask, batched_data,entity_hidden_state, addsource):
+    def decode(self, src_ids, src_mask, batched_data,entity_hidden_state, addsource,sep):
         def _extract(generated_text):
             if self.configs.tgt_descrip_max_length > 0:
                 compiler = re.compile(r'<extra_id_0>(.*?)\[')
@@ -474,6 +531,7 @@ class T5Finetuner(pl.LightningModule):
                                                                    entity_hidden_state=entity_hidden_state,
                                                                    entity_mask =None,
                                                                    addsource=addsource,
+                                                                   sep=sep,
                                                                    )
             raw_generated_text = self.trainer.datamodule.tokenizer.batch_decode(outputs.sequences)
             generated_text = _extract(raw_generated_text)#320个，实体text

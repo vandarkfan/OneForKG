@@ -210,6 +210,7 @@ class ModifiedT5ForConditionalGeneration(T5PreTrainedModel):
         entity_hidden_state=None,
         addsource = None,
         entity_mask = None,
+        sep = None,
     ):
 
         use_cache = use_cache if use_cache is not None else self.config.use_cache
@@ -235,6 +236,7 @@ class ModifiedT5ForConditionalGeneration(T5PreTrainedModel):
                 entity_hidden_state=entity_hidden_state,
                 addsource=addsource,
                 entity_mask=entity_mask,
+                sep=sep,
             )
         elif return_dict and not isinstance(encoder_outputs, BaseModelOutput):
             encoder_outputs = BaseModelOutput(

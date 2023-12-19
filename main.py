@@ -111,7 +111,7 @@ def main():
         'checkpoint_callback': True,  # True
         'logger': False,  # TensorBoardLogger
         'num_sanity_val_steps': 0,  # 2
-        'check_val_every_n_epoch': 5,
+        'check_val_every_n_epoch': 1,
         'enable_progress_bar': True,
         'callbacks': [
             checkpoint_callback,
