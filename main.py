@@ -21,9 +21,9 @@ def main():
     all_triples = train_triples + valid_triples + test_triples
     # checkpoint111 = torch.load(configs.model_path)
     ## construct name list
-    original_ent_name_list, rel_name_list = read_name(configs, configs.dataset_path, configs.dataset)
+    original_ent_name_list, rel_name_list = read_name(configs, configs.dataset_path, configs.dataset,file_cluster='complex_wn18rr1536/t5_cluster30.tar')
     tokenizer = T5Tokenizer.from_pretrained(configs.pretrained_model)
-    description_list = read_file(configs, configs.dataset_path, configs.dataset, 'entityid2description.txt', 'descrip')
+    description_list = read_file(configs, configs.dataset_path, configs.dataset, 'entityid2description.txt', file_cluster = None, mode='descrip')
     print('tokenizing entities...')
     src_description_list = tokenizer.batch_decode([descrip[:-1] for descrip in tokenizer(description_list, max_length=configs.src_descrip_max_length, truncation=True).input_ids])
     tgt_description_list = tokenizer.batch_decode([descrip[:-1] for descrip in tokenizer(description_list, max_length=configs.tgt_descrip_max_length, truncation=True).input_ids])
@@ -111,7 +111,7 @@ def main():
         'checkpoint_callback': True,  # True
         'logger': False,  # TensorBoardLogger
         'num_sanity_val_steps': 0,  # 2
-        'check_val_every_n_epoch': 1,
+        'check_val_every_n_epoch': 5,
         'enable_progress_bar': True,
         'callbacks': [
             checkpoint_callback,

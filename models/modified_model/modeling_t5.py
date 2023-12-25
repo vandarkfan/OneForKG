@@ -341,7 +341,8 @@ class T5Attention(nn.Module):
         self.k = nn.Linear(self.d_model, self.inner_dim, bias=False)
         self.v = nn.Linear(self.d_model, self.inner_dim, bias=False)
         self.o = nn.Linear(self.inner_dim, self.d_model, bias=False)
-
+        # if self.is_decoder == False:
+        #     self.e = nn.Linear(self.d_model, self.inner_dim, bias=False)
         self.fusion = KGTXTFusion(config)
 
         if self.has_relative_attention_bias:
@@ -495,13 +496,19 @@ class T5Attention(nn.Module):
                     hidden_states = past_key_value
             return hidden_states
 
-
         if self.is_decoder == False:
+            # fusion_output = self.fusion(hidden_states, entity_hidden_state)
+            # hidden_states = hidden_states + fusion_output
             # hidden_states = self.conv1D(hidden_states.transpose(1,2))[:,:,:seq_length].transpose(1,2)
-            # hidden_states = self.conv1D(hidden_states.transpose(1,2))[:,:,:seq_length].transpose(1,2)
+            # entity_hidden_state = self.e(entity_hidden_state)
             query_states = self.q(hidden_states)
             key_states = self.k(hidden_states)#[64,63,512]
             value_states = self.v(hidden_states)#[64,63,512]
+
+            # query_states = torch.cat([entity_hidden_state,query_states],dim=1)
+            # key_states = torch.cat([entity_hidden_state, key_states], dim=1)
+            # value_states = torch.cat([entity_hidden_state, value_states], dim=1)
+
             query_states = shape(query_states)
             key_states = shape(key_states)
             value_states = shape(value_states)
@@ -536,6 +543,9 @@ class T5Attention(nn.Module):
                 #     position_bias = self.compute_bias(real_seq_length , key_length)#根据序列长度来搞了个[1,8,63,63]
                 # else:
                 #     position_bias = self.compute_bias(real_seq_length + 4, key_length + 4)
+
+
+
             # if key and values are already calculated
             # we want only the last query position bias
             if past_key_value is not None:
@@ -544,8 +554,9 @@ class T5Attention(nn.Module):
             if mask is not None:
                 # print(position_bias.shape)#1,12,68,68    1,12,27,27    1,12,27,68
                 # print(mask.shape)#32,1,1,68     32,1,27,27      32,1,1,68
-
+                #
                 # if self.is_decoder == False and entity_hidden_state is not None and sep is not None:
+                #     entity_hidden_state = F.dropout(entity_hidden_state , p =0.1, training = self.training)
                 #     kg_position = torch.zeros([batch_size, self.n_heads, position_bias.shape[2], position_bias.shape[3]]).to(
                 #         query_states.device)
                 #     if sep[0][2]==-1:#tail
@@ -569,8 +580,12 @@ class T5Attention(nn.Module):
                 #             kg_position[i,:,int(sep[i][1]+1):int(sep[i][2]),int(sep[i][1]+1):int(sep[i][2])] = e_output
                 #             kg_position[i, :, int(sep[i][0]+1):int(sep[i][1]),int(sep[i][0]+1):int(sep[i][1])] = r_output
                 #     position_bias = position_bias + kg_position
+                #
+
                 position_bias = position_bias + mask  # (batch_size, n_heads, seq_length, key_length)
                 # if self.is_decoder:
+                #     print(position_bias.shape)
+                #     print(mask.shape)
                 #     position_bias = position_bias + mask  # (batch_size, n_heads, seq_length, key_length)
                 # else:
                 #     addmask = torch.zeros([batch_size, 1, 1, 4]).to(0)
@@ -592,6 +607,10 @@ class T5Attention(nn.Module):
 
         attn_output = unshape(torch.matmul(attn_weights, value_states))  # (batch_size, seq_length, dim)
         attn_output = self.o(attn_output)
+        # if self.is_decoder == False:
+        #      attn_output = self.o(attn_output)[:,4:,:]
+        # else:
+        #     attn_output = self.o(attn_output)
         fusion_output = None
         # fusion_output = self.fusion(attn_output, entity_hidden_state) if entity_hidden_state is not None else None # add
         present_key_value_state = (key_states, value_states) if (self.is_decoder and use_cache) else None
@@ -905,6 +924,7 @@ class T5LayerCrossAttention(nn.Module):
         use_cache=False,
         query_length=None,
         output_attentions=False,
+        entity_hidden_state=None,
     ):
         normed_hidden_states = self.layer_norm(hidden_states)
         attention_output,fusion_output,qks = self.EncDecAttention(
@@ -917,6 +937,7 @@ class T5LayerCrossAttention(nn.Module):
             use_cache=use_cache,
             query_length=query_length,
             output_attentions=output_attentions,
+            entity_hidden_state=entity_hidden_state,
         )
         layer_output = hidden_states + self.dropout(attention_output[0])
         outputs = (layer_output,) + attention_output[1:]  # add attentions if we output them
@@ -1029,6 +1050,7 @@ class T5Block(nn.Module):
                 query_length=query_length,
                 use_cache=use_cache,
                 output_attentions=output_attentions,
+                entity_hidden_state=entity_hidden_state,
             )
             hidden_states = cross_attention_outputs[0]
             # clamp inf values to enable fp16 training
@@ -1272,11 +1294,15 @@ class T5Stack(T5PreTrainedModel):
             if self.is_decoder == False and addsource is not None:
                 inputs_embeds = self.embed_tokens(input_ids)
                 inputs_embeds = inputs_embeds + addsource
+            # elif self.is_decoder == False and entity_hidden_state is not None:
+            #     inputs_embeds = self.embed_tokens(input_ids)
+            #     inputs_embeds = torch.cat([entity_hidden_state,inputs_embeds],dim=1)
             else:
                 inputs_embeds = self.embed_tokens(input_ids)
 
+
         batch_size, seq_length = input_shape
-        # if self.is_decoder == False:
+        # if self.is_decoder == False and entity_hidden_state is not None:
         #     seq_length = seq_length + 4
         # required mask seq length can be calculated via length of past
         mask_seq_length = past_key_values[0][0].shape[2] + seq_length if past_key_values is not None else seq_length
@@ -1327,7 +1353,8 @@ class T5Stack(T5PreTrainedModel):
         encoder_decoder_position_bias = None
         # position_neigh_bias = None
         hidden_states = self.dropout(inputs_embeds)
-
+        if self.is_decoder==False:
+            entity_hidden_state = self.dropout(entity_hidden_state)
         for i, (layer_module, past_key_value) in enumerate(zip(self.block, past_key_values)):
             layer_head_mask = head_mask[i]#全没有
             cross_attn_layer_head_mask = cross_attn_head_mask[i]#全没有

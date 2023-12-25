@@ -33,13 +33,17 @@ def read(configs, dataset_path, dataset, filename):
     return triples
 
 
-def read_file(configs, dataset_path, dataset, filename, mode='descrip'):
+def read_file(configs, dataset_path, dataset, filename, file_cluster,mode='descrip'):
     id2name = []
+    if file_cluster!=None:
+        cluster = torch.load(str(file_cluster)).tolist()
     file_name = os.path.join(dataset_path, dataset, filename)
     with open(file_name, encoding='utf-8') as file:
         lines = file.read().strip('\n').split('\n')
     for i in range(1, len(lines)):
         ids, name = lines[i].split('\t')
+        if file_cluster!=None:
+            name = name + ', '+str(int(cluster[int(ids)]))
         if mode == 'descrip':
             name = name.split(' ')
             name = ' '.join(name)
@@ -47,11 +51,11 @@ def read_file(configs, dataset_path, dataset, filename, mode='descrip'):
     return id2name
 
 
-def read_name(configs, dataset_path, dataset):
+def read_name(configs, dataset_path, dataset,file_cluster):
     ent_name_file = 'entityid2name.txt'
     rel_name_file = 'relationid2name.txt'
-    ent_name_list = read_file(configs, dataset_path, dataset, ent_name_file, 'name')
-    rel_name_list = read_file(configs, dataset_path, dataset, rel_name_file, 'name')
+    ent_name_list = read_file(configs, dataset_path, dataset, ent_name_file,file_cluster, 'name')
+    rel_name_list = read_file(configs, dataset_path, dataset, rel_name_file, file_cluster,'name')
     return ent_name_list, rel_name_list
 
 
@@ -99,7 +103,7 @@ def get_next_token_dict(configs, ent_token_ids_in_trie, prefix_trie):
             cur_tokens = list(set(cur_tokens))
             rows.extend([pos_id] * len(cur_tokens))
             cols.extend(cur_tokens)
-        sparse_mask = sp.coo_matrix(([1] * len(rows), (rows, cols)), shape=(len(input_ids), configs.vocab_size), dtype=np.long)
+        sparse_mask = sp.coo_matrix(([1] * len(rows), (rows, cols)), shape=(len(input_ids), configs.vocab_size))
         neg_candidate_mask.append(sparse_mask)
     return neg_candidate_mask, next_token_dict
 

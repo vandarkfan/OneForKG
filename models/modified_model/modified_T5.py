@@ -279,7 +279,6 @@ class ModifiedT5ForConditionalGeneration(T5PreTrainedModel):
             output_attentions=output_attentions,
             output_hidden_states=output_hidden_states,
             return_dict=return_dict,
-            entity_hidden_state=None,
         )
 
         sequence_output = decoder_outputs[0]
