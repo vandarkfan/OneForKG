@@ -9,27 +9,45 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from transformers import T5Tokenizer
 from transformers import T5Config
 from models.model import T5Finetuner
+# from transformers import MT5ForConditionalGeneration, MT5Config, MT5Tokenizer
 from data import DataModule,PretrainDataModule
-from helper import get_num, read, read_name, read_file, get_ground_truth, get_next_token_dict, construct_prefix_trie, get_neighbor_truth
+from helper import get_num, read, read_name, read_file, get_ground_truth, get_next_token_dict, construct_prefix_trie, get_neighbor_truth,get_next_token_dict_testset
 from callbacks import PrintingCallback
 os.environ['CURL_CA_BUNDLE'] = ''
+os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
 def main():
     ## read triples
     train_triples = read(configs, configs.dataset_path, configs.dataset, 'train2id.txt')
     valid_triples = read(configs, configs.dataset_path, configs.dataset, 'valid2id.txt')
     test_triples = read(configs, configs.dataset_path, configs.dataset, 'test2id.txt')
+    # test_triples = read(configs, configs.dataset_path, configs.dataset, 'beamkgc_rebuttle.txt')
     all_triples = train_triples + valid_triples + test_triples
     # checkpoint111 = torch.load(configs.model_path)
     ## construct name list
-    original_ent_name_list, rel_name_list = read_name(configs, configs.dataset_path, configs.dataset,file_cluster='complex_wn18rr1536/t5_cluster30.tar')
+    # configs.complex_dataset + '/t5_cluster30.tar'
+    print(configs.n_aggcluster)
+    if int(configs.n_aggcluster) == 0:
+        original_ent_name_list, rel_name_list = read_name(configs, configs.dataset_path, configs.dataset,
+                                                          file_cluster=None)
+    else:
+        original_ent_name_list, rel_name_list = read_name(configs, configs.dataset_path, configs.dataset,
+                                                          file_cluster=configs.complex_dataset + '/t5_cluster' + str(
+                                                              configs.n_aggcluster) + '.tar')
+
+    # original_ent_name_list, rel_name_list = read_name(configs, configs.dataset_path, configs.dataset,file_cluster= configs.complex_dataset + '/t5_cluster' + str(configs.n_aggcluster) + '.tar')
     tokenizer = T5Tokenizer.from_pretrained(configs.pretrained_model)
-    description_list = read_file(configs, configs.dataset_path, configs.dataset, 'entityid2description.txt', file_cluster = None, mode='descrip')
+    description_list = read_file(configs, configs.dataset_path, configs.dataset, 'entityid2description.txt', file_cluster = None, mode='descrip')#这个地方一直是None
     print('tokenizing entities...')
     src_description_list = tokenizer.batch_decode([descrip[:-1] for descrip in tokenizer(description_list, max_length=configs.src_descrip_max_length, truncation=True).input_ids])
     tgt_description_list = tokenizer.batch_decode([descrip[:-1] for descrip in tokenizer(description_list, max_length=configs.tgt_descrip_max_length, truncation=True).input_ids])
     #都是描述，一个是限制40，一个限制10
     ## construct prefix trie
     # ent_token_ids_in_trie .type: list(list(ids))
+    if configs.dataset == 'wikizs':
+        test_entities_list = torch.load('data/processed/wikizs/dev_candidates_entities.tar')
+        test_entities = [original_ent_name_list[i] for i in test_entities_list]
+        ent_token_ids_in_trie_wiki = tokenizer(['<extra_id_0>' + ent_name + '<extra_id_1>' for ent_name in test_entities], max_length=configs.train_tgt_max_length, truncation=True).input_ids
+
     ent_token_ids_in_trie = tokenizer(['<extra_id_0>' + ent_name + '<extra_id_1>' for ent_name in original_ent_name_list], max_length=configs.train_tgt_max_length, truncation=True).input_ids
 
     if configs.tgt_descrip_max_length > 0:
@@ -37,8 +55,12 @@ def main():
         prefix_trie = construct_prefix_trie(ent_token_ids_in_trie_with_descrip)
         neg_candidate_mask, next_token_dict = get_next_token_dict(configs, ent_token_ids_in_trie_with_descrip, prefix_trie)
     else:
-        prefix_trie = construct_prefix_trie(ent_token_ids_in_trie)
-        neg_candidate_mask, next_token_dict = get_next_token_dict(configs, ent_token_ids_in_trie, prefix_trie)
+        if configs.dataset == 'wikizs':
+            prefix_trie = construct_prefix_trie(ent_token_ids_in_trie_wiki)
+            neg_candidate_mask, next_token_dict = get_next_token_dict_testset(configs, ent_token_ids_in_trie_wiki, prefix_trie)
+        else:
+            prefix_trie = construct_prefix_trie(ent_token_ids_in_trie)
+            neg_candidate_mask, next_token_dict = get_next_token_dict(configs, ent_token_ids_in_trie, prefix_trie)
     ent_name_list = tokenizer.batch_decode([tokens[1:-2] for tokens in ent_token_ids_in_trie])
 
     entname2id = dict()
@@ -60,13 +82,20 @@ def main():
         'entname2id': entname2id,
         'relname2id': relname2id
     }
-
-    prefix_trie_dict = {
-        'prefix_trie': prefix_trie,
-        'ent_token_ids_in_trie': ent_token_ids_in_trie,
-        'neg_candidate_mask': neg_candidate_mask,
-        'next_token_dict': next_token_dict
-    }
+    if configs.dataset == 'wikizs':
+        prefix_trie_dict = {
+            'prefix_trie': prefix_trie,
+            'ent_token_ids_in_trie': ent_token_ids_in_trie_wiki,
+            'neg_candidate_mask': neg_candidate_mask,
+            'next_token_dict': next_token_dict
+        }
+    else:
+        prefix_trie_dict = {
+            'prefix_trie': prefix_trie,
+            'ent_token_ids_in_trie': ent_token_ids_in_trie,
+            'neg_candidate_mask': neg_candidate_mask,
+            'next_token_dict': next_token_dict
+        }
     if configs.tgt_descrip_max_length > 0:
         prefix_trie_dict['ent_token_ids_in_trie_with_descrip'] = ent_token_ids_in_trie_with_descrip
 
@@ -133,6 +162,7 @@ def main():
         if configs.istrain :
             # model = T5Finetuner.load_from_checkpoint(configs.model_path, strict=False, configs=configs, **kw_args)
             model = T5Finetuner(configs, **kw_args)
+
             # model = T5Finetuner(configs, **kw_args)
             print('model construction done.', flush=True)
             trainer.fit(model, datamodule)
@@ -156,6 +186,9 @@ if __name__ == '__main__':
     parser.add_argument('-num_workers', type=int, default=0, help='Number of processes to construct batches')
     parser.add_argument('-save_dir', type=str, default='', help='')
     parser.add_argument('-pretrainKG', type=int, default=0, help='')
+    parser.add_argument('-use_DT5', action='store_true', help='')
+    parser.add_argument('-w_SBeam', type=float, default=0, help='weight of structure beam')
+    parser.add_argument('-n_aggcluster', type=int, default=0, help='')
     parser.add_argument('-istrain', type=int, default=0, help='')
     parser.add_argument('-pretrained_model', type=str, default='t5-base', help='')
     parser.add_argument('-batch_size', default=64, type=int, help='Batch size')
@@ -168,7 +201,7 @@ if __name__ == '__main__':
     parser.add_argument('-epoch', dest='epochs', type=int, default=500, help='Number of epochs')
     parser.add_argument('-lr', type=float, default=0.001, help='Starting Learning Rate')
     parser.add_argument('-diversity_penalty', default=0., type=float, help='')
-
+    parser.add_argument('-complex_dataset', default='complex_fb15k237-1536', type=str, help='')
     parser.add_argument('-model_path', dest='model_path', default='', help='The path for reloading models')
     parser.add_argument('-optim', default='Adam', type=str, help='')
     parser.add_argument('-decoder', type=str, default='beam_search', help='[beam_search, do_sample, beam_sample_search, diverse_beam_search]')
@@ -189,7 +222,7 @@ if __name__ == '__main__':
     configs.vocab_size = T5Config.from_pretrained(configs.pretrained_model).vocab_size
     configs.model_dim = T5Config.from_pretrained(configs.pretrained_model).d_model
     if configs.save_dir == '':
-        configs.save_dir = os.path.join('./checkpoint', configs.dataset + '-' + str(datetime.now())[:10])
+        configs.save_dir = os.path.join('./checkpoint', configs.dataset + '-' + str(datetime.now())[:10] + '-aggcluster' + str(configs.n_aggcluster) + '-DT5' + str(configs.use_DT5)[0])
     os.makedirs(configs.save_dir, exist_ok=True)
     print(configs, flush=True)
 

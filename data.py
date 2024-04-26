@@ -91,6 +91,8 @@ class TrainDataset(Dataset):
             #         range(sep2 + 1, sep3)) + [0] + list(range(sep3, len(source_ids)))
             #     soft_prompt_index = torch.LongTensor([sep2 + 3, sep3 + 3, sep1 + 1, sep2 + 1])
         else:
+            # print(source_ids)
+            # print(src)
             sep1, sep2 = [ids for ids in range(len(source_ids)) if source_ids[ids] == 1820]
             sep3 = -1
             if mode == 'head':

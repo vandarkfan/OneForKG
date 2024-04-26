@@ -16,6 +16,7 @@ class Processor:
         self.entid2name = {}
         self.entid2descrip = {}
         self.relid2name = {}
+        self.rel2name = {}
 
     def create_out_folder(self):
         os.makedirs(os.path.join(self.out_folder, self.dataset), exist_ok=True)
@@ -64,6 +65,7 @@ class Processor:
             if rel in self.rel2id:
                 head_id, rel_id, tail_id = self.ent2id[head], self.rel2id[rel], self.ent2id[tail]
                 triples.append([head_id, tail_id, rel_id])
+
         return triples
 
     def write_triples(self, filename, triples, out_folder=None, dataset=None):

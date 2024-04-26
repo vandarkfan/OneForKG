@@ -1977,7 +1977,7 @@ class GenerationMixin:
                 return_dict=True,
                 output_attentions=output_attentions,
                 output_hidden_states=output_hidden_states,
-            )
+            )#s=因为encoder有东西了，直接进去给他解码了
 
             if synced_gpus and this_peer_finished:
                 cur_len = cur_len + 1
@@ -2020,8 +2020,8 @@ class GenerationMixin:
                 next_token_scores, 2 * num_beams, dim=1, largest=True, sorted=True
             )
 
-            next_indices = (next_tokens / vocab_size).long()
-            next_tokens = next_tokens % vocab_size
+            next_indices = (next_tokens / vocab_size).long()#取得是地几个beam
+            next_tokens = next_tokens % vocab_size#取得是哪一个token
 
             # stateless
             beam_outputs = beam_scorer.process(

@@ -55,7 +55,7 @@ def read_name(configs, dataset_path, dataset,file_cluster):
     ent_name_file = 'entityid2name.txt'
     rel_name_file = 'relationid2name.txt'
     ent_name_list = read_file(configs, dataset_path, dataset, ent_name_file,file_cluster, 'name')
-    rel_name_list = read_file(configs, dataset_path, dataset, rel_name_file, file_cluster,'name')
+    rel_name_list = read_file(configs, dataset_path, dataset, rel_name_file,None ,'name')
     return ent_name_list, rel_name_list
 
 
@@ -106,6 +106,28 @@ def get_next_token_dict(configs, ent_token_ids_in_trie, prefix_trie):
         sparse_mask = sp.coo_matrix(([1] * len(rows), (rows, cols)), shape=(len(input_ids), configs.vocab_size))
         neg_candidate_mask.append(sparse_mask)
     return neg_candidate_mask, next_token_dict
+
+def get_next_token_dict_testset(configs, ent_token_ids_in_trie, prefix_trie):
+    neg_candidate_mask = []
+    next_token_dict = {(): [32099] * 13824}
+    for ent_id in tqdm(range(13824)):
+        rows, cols = [0], [32099]
+        input_ids = ent_token_ids_in_trie[ent_id]
+        for pos_id in range(1, len(input_ids)):
+            cur_input_ids = input_ids[:pos_id]
+            if tuple(cur_input_ids) in next_token_dict:
+                cur_tokens = next_token_dict[tuple(cur_input_ids)]
+            else:
+                seqs = prefix_trie.keys(prefix=cur_input_ids)
+                cur_tokens = [seq[pos_id] for seq in seqs]
+                next_token_dict[tuple(cur_input_ids)] = Counter(cur_tokens)
+            cur_tokens = list(set(cur_tokens))
+            rows.extend([pos_id] * len(cur_tokens))
+            cols.extend(cur_tokens)
+        sparse_mask = sp.coo_matrix(([1] * len(rows), (rows, cols)), shape=(len(input_ids), configs.vocab_size))
+        neg_candidate_mask.append(sparse_mask)
+    return neg_candidate_mask, next_token_dict
+
 
 
 def get_soft_prompt_pos(configs, source_ids, target_ids, mode):
