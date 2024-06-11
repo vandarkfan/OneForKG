@@ -247,7 +247,7 @@ mean ranking  0.347114  3126.179981  27.39%  38.51%  49.81%
 
 
 
-消融实验
+消融实验wn18rr
 这个是lost相加之后的结果,wn18rr,w=0.01,占比为0.1,base,768*2,这个结果是加上了complex的，但是计分的时候不经过重排序
 tail ranking  0.682441  3212.687939  62.86%  71.35%  78.37%
 head ranking  0.472063  8128.717932  43.84%  48.44%  53.54%
@@ -265,3 +265,20 @@ tail ranking  0.688406  3132.604340  63.69%  72.18%  78.56%
 head ranking  0.485245  8161.329611  45.50%  49.78%  54.75%
 mean ranking  0.586825  5646.966975  54.59%  60.98%  66.66%
 
+
+\begin{table*}[]
+	\renewcommand\arraystretch{1.1}
+	\caption{Top-5 ranking results of candidate entities of KGS2S, ComplEx and BeamKGC. }
+	\begin{tabular}{llll}
+		\hline
+		\multicolumn{1}{c}{\multirow{2}{*}{Incomplete Triple}}                                                 & \multicolumn{3}{c}{Top-5 ranked candidate entities}                                                                                                                                                                                                                                                                                                                                                                                                                                                                            \\ \cline{2-4} 
+		\multicolumn{1}{c}{}                                                                                   & \multicolumn{1}{c}{KGS2S}                                                                                                                                        & \multicolumn{1}{c}{ComplEx}                                                                                                                      & \multicolumn{1}{c}{BeamKGC}                                                                                                                                                                              \\ \hline
+		\begin{tabular}[c]{@{}l@{}}h: {[}4{]} parasympathetic nervous system\\ r: hypernym\\ t: ?\end{tabular} & \begin{tabular}[c]{@{}l@{}}systema nervosum centrale, \\ systema nervosum, \\ system, \\ systema skeletale, \\ neural structure\end{tabular}                     & \begin{tabular}[c]{@{}l@{}}systema skeletale, \\ systema nervosum centrale, \\ system, \\ sympathetic nervous system, \\ neurology\end{tabular}  & \begin{tabular}[c]{@{}l@{}}{[}9{]} systema nervosum, \\ {[}1{]} systema nervosum centrale, \\ {[}3{]} system, \\ {[}6{]} neural structure, \\ {[}9{]} autonomic nervous system\end{tabular}              \\ \cline{2-4} 
+		\begin{tabular}[c]{@{}l@{}}h: {[}1{]} pereskia\\ r: hypernym\\ t: ?\end{tabular}                       & \begin{tabular}[c]{@{}l@{}}rosid dicot genus, \\ dilleniid dicot genus, \\ asterid dicot genus, \\ magnoliopsid genus, \\ caryophylloid dicot genus\end{tabular} & \begin{tabular}[c]{@{}l@{}}caryophylloid dicot genus, \\ climbing fern, \\ magnoliopsid genus, \\ rosid dicot genus, \\ plant genus\end{tabular} & \begin{tabular}[c]{@{}l@{}}{[}5{]} rosid dicot genus, \\ {[}4{]} dilleniid dicot genus, \\ {[}4{]} asterid dicot genus, \\ {[}6{]} caryophylloid dicot genus, \\ {[}2{]} magnoliopsid genus\end{tabular} \\ \cline{2-4} 
+		\begin{tabular}[c]{@{}l@{}}h: {[}4{]} palaemon\\ r: member meronym\\ t: ?\end{tabular}                 & \begin{tabular}[c]{@{}l@{}}river horse, \\ river kasai, \\ prawn,\\ orycteropus afer, \\ manta ray\end{tabular}                                                  & \begin{tabular}[c]{@{}l@{}}river kasai, \\ fly, \\ spider crab, \\ trichophaga tapetzella, \\ palaemon\end{tabular}                              & \begin{tabular}[c]{@{}l@{}}{[}12{]} river horse, \\ {[}4{]} prawn, \\ {[}4{]} river kasai, \\ {[}7{]} orycteropus afer, \\ {[}4{]} manta ray\end{tabular}                                                \\ \hline
+	\end{tabular}
+\end{table*}
+ 
+python main.py -dataset wikizs  -lr 0.001 -epoch 100 -batch_size 32 -src_descrip_max_length 0 -tgt_descrip_max_length 0 -seq_dropout 0 -num_beams 40 -eval_tgt_max_length 30 -skip_n_val_epoch 0  -pretrainKG 0 -istrain 1 -complex_dataset complex_wn18rr1536
+
+python main.py -dataset wikizs -lr 0.0005   -epoch 30    -batch_size 10    -src_descrip_max_length  0  -tgt_descrip_max_length 0  -num_beams 40   -eval_tgt_max_length 25     -skip_n_val_epoch 15  -pretrainKG 0 -istrain 1   -complex_dataset complex_nell-1536  -gpu 0   -src_max_length  1024

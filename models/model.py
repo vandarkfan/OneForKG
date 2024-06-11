@@ -18,10 +18,14 @@ class T5Finetuner(pl.LightningModule):
         self.save_hyperparameters()
         self.configs = configs
         self.pretrainKG = configs.pretrainKG
-        self.train_tail_ground_truth = ground_truth_dict['train_tail_ground_truth']
-        self.train_head_ground_truth = ground_truth_dict['train_head_ground_truth']
-        self.all_tail_ground_truth = ground_truth_dict['all_tail_ground_truth']
-        self.all_head_ground_truth = ground_truth_dict['all_head_ground_truth']
+        if self.configs.dataset == 'WikiPeople':
+            self.train_ground_truth = ground_truth_dict['train_ground_truth']
+            self.all_ground_truth = ground_truth_dict['all_ground_truth']
+        else:
+            self.train_tail_ground_truth = ground_truth_dict['train_tail_ground_truth']
+            self.train_head_ground_truth = ground_truth_dict['train_head_ground_truth']
+            self.all_tail_ground_truth = ground_truth_dict['all_tail_ground_truth']
+            self.all_head_ground_truth = ground_truth_dict['all_head_ground_truth']
         self.relname2id = name_list_dict['relname2id']
         self.entname2id = name_list_dict['entname2id']
         self.ent_name_list = name_list_dict['ent_name_list']
@@ -32,18 +36,22 @@ class T5Finetuner(pl.LightningModule):
         self.next_token_dict = prefix_trie_dict['next_token_dict']
         if self.configs.tgt_descrip_max_length > 0:
             self.ent_token_ids_in_trie_with_descrip = prefix_trie_dict['ent_token_ids_in_trie_with_descrip']
+        print(configs.gpu)
         self.T5ForConditionalGeneration = ModifiedT5ForConditionalGeneration.from_pretrained(configs.pretrained_model)
         if self.configs.dataset == 'NELL':
             self.typecons = json.load(open('data/processed/NELL/typecons.json'))
         if self.configs.dataset == 'wikizs':
             self.typecons = json.load(open('data/processed/wikizs/dev_candidates.json'))
-        # checkpoint = torch.load('./' + self.configs.complex_dataset + '/t5_complex_model.tar')
-        # self.ent_embed = nn.Embedding.from_pretrained(checkpoint['ent_embed'])
-        # self.ent_embed.weight.requires_grad = False
-        # self.rel_embed = nn.Embedding.from_pretrained(checkpoint['rel_embed'])
-        # self.rel_embed.weight.requires_grad = False
-        # self.prompt_dim = checkpoint['rel_embed'].shape[-1]
+
         self.w = configs.w_SBeam
+        if self.w >0.00001:
+            checkpoint = torch.load('./' + self.configs.complex_dataset + '/t5_complex_model.tar')
+            self.ent_embed = nn.Embedding.from_pretrained(checkpoint['ent_embed'])
+            self.ent_embed.weight.requires_grad = False
+            self.rel_embed = nn.Embedding.from_pretrained(checkpoint['rel_embed'])
+            self.rel_embed.weight.requires_grad = False
+            self.prompt_dim = checkpoint['rel_embed'].shape[-1]
+
 
 
         if self.configs.use_soft_prompt:
@@ -79,9 +87,13 @@ class T5Finetuner(pl.LightningModule):
             loss = torch.mean(output.loss)
             self.history['loss'].append(loss.detach().item())
         else:
-            loss_tail = self.training_step_dan(batched_data[0], batch_idx)
-            loss_head = self.training_step_dan(batched_data[1], batch_idx)
-            loss = (loss_tail + loss_head)/2
+            if self.configs.dataset != 'WikiPeople':
+                loss_tail = self.training_step_dan(batched_data[0], batch_idx)
+                loss_head = self.training_step_dan(batched_data[1], batch_idx)
+                loss = (loss_tail + loss_head)/2
+            else:
+                loss_head = self.training_step_dan(batched_data, batch_idx)
+                loss = loss_head
 
         return {'loss': loss}
 
@@ -91,18 +103,14 @@ class T5Finetuner(pl.LightningModule):
         # target_ids, target_mask, labels: .shape: (batch_size, padded_seq_len)
         target_ids = batched_data['target_ids']
         target_mask = batched_data['target_mask']
-        fullneigh= batched_data['fullneigh']
-        sep = batched_data['sep'][0]
-        sep_positon = batched_data['sep']
+        sep = batched_data['sep']
+        # sep_positon = batched_data['sep']
         labels = target_ids.clone()
         labels[labels[:, :] == self.trainer.datamodule.tokenizer.pad_token_id] = -100
         # train_triples .shape: (batch_size, 3)
         train_triples = batched_data['train_triple']
         # ent_rel .shape: (batch_size, 2)
-        ent_rel = batched_data['ent_rel']
-        mode = batched_data['mode']
-        ent_ids, rel_ids = torch.squeeze(ent_rel[:, [0]]), torch.squeeze(ent_rel[:, [1]])
-        target_entity = torch.tensor(batched_data['target_ent']).to(src_ids.device)
+        # target_entity = torch.tensor(batched_data['target_ent']).to(src_ids.device)
         # entity_id_embed = self.ent_embed(ent_ids)
         addsource = None
         # if mode == 'head':
@@ -194,7 +202,7 @@ class T5Finetuner(pl.LightningModule):
                                                      output_hidden_states=True)
         else:
             output = self.T5ForConditionalGeneration(input_ids=src_ids, attention_mask=src_mask, labels=labels,
-                                                     entity_hidden_state=entity_hidden_state,addsource =addsource,sep =sep_positon)
+                                                     entity_hidden_state=entity_hidden_state,addsource =addsource,sep = sep)
         loss = torch.mean(output.loss)
 
         # ent = output.encoder_last_hidden_state[:,:2,:].view(batched_data['source_ids'].shape[0],-1)
@@ -309,18 +317,18 @@ class T5Finetuner(pl.LightningModule):
             # src_names, target_names: .shape: (batch_size, ) .type:list(str)
             src_names = batched_data['source_names']
             target_names = batched_data['target_names']
-
-            fullneigh = batched_data['fullneigh']
             # test_triple: .shape: (batch_size, 3)
             self.test_triple = batched_data['test_triple']
             # ent_rel: .shape: (batch_size, 2)
-            self.ent_rel = batched_data['ent_rel']
-            target_entity = torch.tensor(batched_data['target_ent']).to(src_ids.device)
+            # target_entity = torch.tensor(batched_data['target_ent']).to(src_ids.device)
             mode = batched_data['mode']
             self.dataset_idx = dataset_idx
-            sep = batched_data['sep'][0]
-            sep_positon = batched_data['sep']
-            ent_ids, rel_ids = torch.squeeze(self.ent_rel[:, [0]]), torch.squeeze(self.ent_rel[:, [1]])
+
+            sep = batched_data['sep']
+
+            if self.configs.dataset != 'WikiPeople':
+                self.ent_rel = batched_data['ent_rel']
+                ent_ids, rel_ids = torch.squeeze(self.ent_rel[:, [0]]), torch.squeeze(self.ent_rel[:, [1]])
 
 
             # entity_id_embed = self.ent_embed(ent_ids)
@@ -390,6 +398,14 @@ class T5Finetuner(pl.LightningModule):
 
             entity_hidden_state = None
 
+            # if self.configs.dataset != 'WikiPeople':
+            #     if dataset_idx == 0:
+            #         self.all_ground_truth = self.all_tail_ground_truth
+            #         self.train_ground_truth = self.train_tail_ground_truth
+            #     else:
+            #         self.all_ground_truth = self.all_head_ground_truth
+            #         self.train_ground_truth = self.train_head_ground_truth
+
             if dataset_idx == 0:
                 self.all_ground_truth = self.all_tail_ground_truth
                 self.train_ground_truth = self.train_tail_ground_truth
@@ -397,50 +413,50 @@ class T5Finetuner(pl.LightningModule):
                 self.all_ground_truth = self.all_head_ground_truth
                 self.train_ground_truth = self.train_head_ground_truth
 
-
-            #
-            #
             # generated_text .type: list(str) .len: batch_size * num_beams
-            generated_text, scores_t5 = self.decode(src_ids, src_mask, batched_data, entity_hidden_state, addsource,sep =sep_positon)
+            generated_text, scores_t5 = self.decode(src_ids, src_mask, batched_data, entity_hidden_state, addsource,sep)
             group_text = [generated_text[i:i + self.configs.num_beams] for i in range(0, len(generated_text), self.configs.num_beams)]
             # # #
             # # # #
-            # if self.w>0.00001:
-            #     scores_t5 = scores_t5.contiguous().view(-1, self.configs.num_beams)
-            #     scores_t5 = torch.softmax(scores_t5, dim=1)
-            #     generated_id = -1 * torch.ones([len(generated_text)])
-            #     for i in range(len(generated_text)):
-            #         if generated_text[i] in self.entname2id.keys():
-            #             generated_id[i] = self.entname2id[generated_text[i]]
-            #     generated_id = generated_id.contiguous().view(-1, self.configs.num_beams)
-            #     scores_complex = self.complex_s(mode = mode, ent_ids = ent_ids, rel_ids = rel_ids)
-            #     scores_complex2t5 = -1 * torch.ones([generated_id.shape[0], generated_id.shape[1]])
-            #     for i in range(generated_id.shape[0]):
-            #         for j in range(generated_id.shape[1]):
-            #             if generated_id[i,j]!=-1:
-            #                 scores_complex2t5[i,j] = scores_complex[i, int(generated_id[i,j])]#[8,40]里面不对劲的玩意都变成-10000了，有数字的可能在-7~7之间
-            #             else:
-            #                 scores_complex2t5[i, j] = -10000
-            #     scores_complex2t5 = torch.softmax(scores_complex2t5, dim=1)
-            #     scores = (1 - self.w) * scores_t5 + self.w * scores_complex2t5.to(src_ids.device)
-            #     sorted_scores, indices = torch.sort(scores, descending=True, dim=-1)
-            #     sorted_group_text = []
-            #     for i in range(len(group_text)):
-            #         sorted_group_text_dan = []
-            #         for j in range(self.configs.num_beams):
-            #             sorted_group_text_dan.append(group_text[i][indices[i,j]])
-            #         sorted_group_text.append(sorted_group_text_dan)
-            #     group_text = sorted_group_text
-            #
+            if self.w>0.00001:
+                scores_t5 = scores_t5.contiguous().view(-1, self.configs.num_beams)
+                scores_t5 = torch.softmax(scores_t5, dim=1)
+                generated_id = -1 * torch.ones([len(generated_text)])
+                for i in range(len(generated_text)):
+                    if generated_text[i] in self.entname2id.keys():
+                        generated_id[i] = self.entname2id[generated_text[i]]
+                generated_id = generated_id.contiguous().view(-1, self.configs.num_beams)
+                scores_complex = self.complex_s(mode = mode, ent_ids = ent_ids, rel_ids = rel_ids)
+                scores_complex2t5 = -1 * torch.ones([generated_id.shape[0], generated_id.shape[1]])
+                for i in range(generated_id.shape[0]):
+                    for j in range(generated_id.shape[1]):
+                        if generated_id[i,j]!=-1:
+                            scores_complex2t5[i,j] = scores_complex[i, int(generated_id[i,j])]#[8,40]里面不对劲的玩意都变成-10000了，有数字的可能在-7~7之间
+                        else:
+                            scores_complex2t5[i, j] = -10000
+                scores_complex2t5 = torch.softmax(scores_complex2t5, dim=1)
+                scores = (1 - self.w) * scores_t5 + self.w * scores_complex2t5.to(src_ids.device)
+                sorted_scores, indices = torch.sort(scores, descending=True, dim=-1)
+                sorted_group_text = []
+                for i in range(len(group_text)):
+                    sorted_group_text_dan = []
+                    for j in range(self.configs.num_beams):
+                        sorted_group_text_dan.append(group_text[i][indices[i,j]])
+                    sorted_group_text.append(sorted_group_text_dan)
+                group_text = sorted_group_text
 
-            if self.configs.log_text:
-                self.log_generation(group_text, src_names, target_names, batch_idx, dataset_idx)
+
+            # if self.configs.log_text:
+            #     self.log_generation(group_text, src_names, target_names, batch_idx, dataset_idx)
             ranks = []
+
+
             for i, texts in enumerate(group_text):
                 if self.configs.temporal:
                     hr_key = (self.test_triple[i][dataset_idx], self.test_triple[i][2], self.test_triple[i][3])
                 else:
                     hr_key = (self.test_triple[i][dataset_idx], self.test_triple[i][2])
+
                 all_gt_ids = self.all_ground_truth[hr_key]#list里面是这个实体应该过滤的id
                 all_gt_seqs = [self.ent_name_list[ids] for ids in all_gt_ids]
 
@@ -543,6 +559,7 @@ class T5Finetuner(pl.LightningModule):
                 hr_key = (self.test_triple[batch_idx][self.dataset_idx], self.test_triple[batch_idx][2], self.test_triple[batch_idx][3])
             else:
                 hr_key = (self.test_triple[batch_idx][self.dataset_idx], self.test_triple[batch_idx][2])
+
             all_gt_ids = self.all_ground_truth[hr_key]
             ent_token_ids_in_trie = self.ent_token_ids_in_trie_with_descrip if configs.tgt_descrip_max_length > 0 else self.ent_token_ids_in_trie
             all_gt_seq = [tuple(ent_token_ids_in_trie[ids]) for ids in all_gt_ids]
@@ -607,7 +624,7 @@ class T5Finetuner(pl.LightningModule):
                                                                    entity_hidden_state=entity_hidden_state,
                                                                    entity_mask = None,
                                                                    addsource=addsource,
-                                                                   sep=sep,
+                                                                   sep =  sep,
                                                                    )
             raw_generated_text = self.trainer.datamodule.tokenizer.batch_decode(outputs.sequences)
             generated_text = _extract(raw_generated_text)#320个，实体text

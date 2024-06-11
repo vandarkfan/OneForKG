@@ -15,6 +15,7 @@ from helper import get_num, read, read_name, read_file, get_ground_truth, get_ne
 from callbacks import PrintingCallback
 os.environ['CURL_CA_BUNDLE'] = ''
 os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
+
 def main():
     ## read triples
     train_triples = read(configs, configs.dataset_path, configs.dataset, 'train2id.txt')
@@ -103,13 +104,11 @@ def main():
     # ground truth .shape: dict, example: {hr_str_key1: [t_id11, t_id12, ...], (hr_str_key2: [t_id21, t_id22, ...], ...}
     train_tail_ground_truth, train_head_ground_truth = get_ground_truth(configs, train_triples)
     all_tail_ground_truth, all_head_ground_truth = get_ground_truth(configs, all_triples)
-    neigh = get_neighbor_truth(configs, train_triples)
     ground_truth_dict = {
         'train_tail_ground_truth': train_tail_ground_truth,
         'train_head_ground_truth': train_head_ground_truth,
         'all_tail_ground_truth': all_tail_ground_truth,
         'all_head_ground_truth': all_head_ground_truth,
-        'neigh': neigh
     }
     if configs.pretrainKG:
         datamodule = PretrainDataModule(configs, name_list_dict, ground_truth_dict)
@@ -162,7 +161,6 @@ def main():
         if configs.istrain :
             # model = T5Finetuner.load_from_checkpoint(configs.model_path, strict=False, configs=configs, **kw_args)
             model = T5Finetuner(configs, **kw_args)
-
             # model = T5Finetuner(configs, **kw_args)
             print('model construction done.', flush=True)
             trainer.fit(model, datamodule)
@@ -171,6 +169,7 @@ def main():
             model_path = configs.model_path
     print('model_path:', model_path, flush=True)
     model = T5Finetuner.load_from_checkpoint(model_path, strict=False, configs=configs, **kw_args)
+    # print(model.parameters())
     trainer.test(model, dataloaders=datamodule)
 
 
@@ -186,7 +185,9 @@ if __name__ == '__main__':
     parser.add_argument('-num_workers', type=int, default=0, help='Number of processes to construct batches')
     parser.add_argument('-save_dir', type=str, default='', help='')
     parser.add_argument('-pretrainKG', type=int, default=0, help='')
-    parser.add_argument('-use_DT5', action='store_true', help='')
+    parser.add_argument('-e', type=int, default=1, help='')
+    parser.add_argument('-start_layer', type=int, default=0, help='')
+    parser.add_argument('-end_layer', type=int, default=11, help='')
     parser.add_argument('-w_SBeam', type=float, default=0, help='weight of structure beam')
     parser.add_argument('-n_aggcluster', type=int, default=0, help='')
     parser.add_argument('-istrain', type=int, default=0, help='')
@@ -222,7 +223,7 @@ if __name__ == '__main__':
     configs.vocab_size = T5Config.from_pretrained(configs.pretrained_model).vocab_size
     configs.model_dim = T5Config.from_pretrained(configs.pretrained_model).d_model
     if configs.save_dir == '':
-        configs.save_dir = os.path.join('./checkpoint', configs.dataset + '-' + str(datetime.now())[:10] + '-aggcluster' + str(configs.n_aggcluster) + '-DT5' + str(configs.use_DT5)[0])
+        configs.save_dir = os.path.join('./checkpoint', configs.dataset + '-' + str(datetime.now())[:10] + '-aggcluster' + str(configs.n_aggcluster) + '-e' + str(configs.e) + '-sL' + str(configs.start_layer)+'-eL' + str(configs.end_layer))
     os.makedirs(configs.save_dir, exist_ok=True)
     print(configs, flush=True)
 
@@ -231,3 +232,4 @@ if __name__ == '__main__':
     torch.backends.cudnn.deterministic = True
     torch.set_printoptions(profile='full')
     main()
+

@@ -72,6 +72,18 @@ def get_ground_truth(configs, triples):
             head_ground_truth[(tail, rel)].append(head)
     return tail_ground_truth, head_ground_truth
 
+def get_wikipeople_ground_truth(configs, triples):
+    ground_truth = ddict(list)
+    for triple in triples:
+        real_triple = triple[:-2]
+        index = tuple()
+        for i in real_triple:
+            if i != -1:
+                index += (i,)
+        ground_truth[index].append(triple[-1])
+    return ground_truth
+
+
 def get_neighbor_truth(configs, triples):
     countmax = 25
     neigh = ddict(list)
@@ -207,6 +219,26 @@ def get_performance(model, tail_ranks, head_ranks):
         model.log('val_mrr', val_mrr)
         perf = {'mrr': mrr, 'mr': mr, 'hit@1': hit1, 'hit@3': hit3, 'hit@10': hit10}
     perf = pd.DataFrame(perf, index=['tail ranking', 'head ranking'])
+    perf.loc['mean ranking'] = perf.mean(axis=0)
+    for hit in ['hit@1', 'hit@3', 'hit@5', 'hit@10']:
+        if hit in list(perf.columns):
+            perf[hit] = perf[hit].apply(lambda x: '%.2f%%' % (x * 100))
+    return perf
+
+def get_performance_wikipeople(model, ranks):
+    tail_out = _get_performance(ranks, model.configs.dataset)
+    mr = np.array([tail_out['mr']])
+    mrr = np.array([tail_out['mrr']])
+    hit1 = np.array([tail_out['hit1']])
+    hit3 = np.array([tail_out['hit3']])
+    hit10 = np.array([tail_out['hit10']])
+
+    val_mrr = mrr.mean().item()
+    model.log('val_mrr', val_mrr)
+    perf = {'mrr': mrr, 'mr': mr, 'hit@1': hit1, 'hit@3': hit3, 'hit@10': hit10}
+
+
+    perf = pd.DataFrame(perf, index=['ranking'])
     perf.loc['mean ranking'] = perf.mean(axis=0)
     for hit in ['hit@1', 'hit@3', 'hit@5', 'hit@10']:
         if hit in list(perf.columns):

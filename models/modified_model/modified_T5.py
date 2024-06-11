@@ -123,9 +123,7 @@ class ModifiedT5ForConditionalGeneration(T5PreTrainedModel):
     def __init__(self, config):
         super().__init__(config)
         self.model_dim = config.d_model
-
         self.shared = nn.Embedding(config.vocab_size, config.d_model)
-
         encoder_config = copy.deepcopy(config)
         encoder_config.is_decoder = False
         encoder_config.use_cache = False
@@ -225,7 +223,7 @@ class ModifiedT5ForConditionalGeneration(T5PreTrainedModel):
         # Encode if needed (training, first prediction pass)
         if encoder_outputs is None:
             # Convert encoder inputs in embeddings if needed
-            encoder_outputs = self.encoder(
+            encoder_outputs,bal_loss = self.encoder(
                 input_ids=input_ids,
                 attention_mask=attention_mask,
                 inputs_embeds=inputs_embeds,
@@ -238,6 +236,7 @@ class ModifiedT5ForConditionalGeneration(T5PreTrainedModel):
                 entity_mask=entity_mask,
                 sep=sep,
             )
+
         elif return_dict and not isinstance(encoder_outputs, BaseModelOutput):
             encoder_outputs = BaseModelOutput(
                 last_hidden_state=encoder_outputs[0],
@@ -266,7 +265,7 @@ class ModifiedT5ForConditionalGeneration(T5PreTrainedModel):
         #         decoder_attention_mask = decoder_attention_mask.to(self.decoder.first_device)
 
         # Decode
-        decoder_outputs = self.decoder(
+        decoder_outputs,_ = self.decoder(
             input_ids=decoder_input_ids,
             attention_mask=decoder_attention_mask,
             inputs_embeds=decoder_inputs_embeds,
@@ -302,6 +301,7 @@ class ModifiedT5ForConditionalGeneration(T5PreTrainedModel):
             loss = loss_fct(lm_logits.view(-1, lm_logits.size(-1)), labels.view(-1))
             loss = loss.view(lm_logits.size(0), lm_logits.size(1))
             loss = torch.mean(loss, dim=-1)
+            loss = loss + bal_loss
             ####################################################################################################
         if not return_dict:
             output = (lm_logits,) + decoder_outputs[1:] + encoder_outputs

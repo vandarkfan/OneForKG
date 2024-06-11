@@ -45,6 +45,7 @@ from transformers.utils import logging
 from transformers.utils.model_parallel_utils import assert_device_map, get_device_map
 from transformers.models.t5.configuration_t5 import T5Config
 
+# cuda_gpu = torch.device('cuda:0')
 
 logger = logging.get_logger(__name__)
 
@@ -332,13 +333,14 @@ class FeedForward(nn.Module):
     ## FFN module
     """
 
-    def __init__(self, d_model: int, d_ff: int,
+    def __init__(self,d_model: int, d_ff: int,
                  dropout: float = 0.1,
                  activation=nn.ReLU(),
                  is_gated: bool = False,
                  bias1: bool = True,
                  bias2: bool = True,
-                 bias_gate: bool = True):
+                 bias_gate: bool = True,
+                 ):
         """
         * `d_model` is the number of features in a token embedding
         * `d_ff` is the number of features in the hidden layer of the FFN
@@ -349,6 +351,7 @@ class FeedForward(nn.Module):
         * `bias_gate` specified whether the fully connected layer for the gate should have a learnable bias
         """
         super().__init__()
+        from __main__ import configs
         # Layer one parameterized by weight $W_1$ and bias $b_1$
         self.layer1 = nn.Linear(d_model, d_ff, bias=bias1)
         # Layer one parameterized by weight $W_1$ and bias $b_1$
@@ -356,14 +359,14 @@ class FeedForward(nn.Module):
         # Hidden layer dropout
         self.dropout = nn.Dropout(dropout)
         # Activation function $f$
-        self.activation = activation.to(0)
+        self.activation = activation
         # Whether there is a gate
         self.is_gated = is_gated
         if is_gated:
             # If there is a gate the linear layer to transform inputs to
             # be multiplied by the gate, parameterized by weight $V$ and bias $c$
             self.linear_v = nn.Linear(d_model, d_ff, bias=bias_gate)
-        self.to(torch.device("cuda:0" if torch.cuda.is_available() else "cpu"))
+        self.to('cuda:'+ str(configs.gpu))
 
     def forward(self, x: torch.Tensor):
         # $f(x W_1 + b_1)$
@@ -389,7 +392,8 @@ class SwitchFeedForward(nn.Module):
                  drop_tokens: bool,
                  is_scale_prob: bool,
                  n_experts: int,
-                 d_model: int,):
+                 d_model: int,
+                 ):
         """
         * `capacity_factor` is the capacity of each expert as a factor relative to ideally balanced load
         * `drop_tokens` specifies whether to drop tokens if more tokens are routed to an expert than the capacity
@@ -401,7 +405,7 @@ class SwitchFeedForward(nn.Module):
         * `dropout` is dropout probability in the FFN
         """
         super().__init__()
-
+        from __main__ import configs
         self.capacity_factor = capacity_factor
         self.is_scale_prob = is_scale_prob
         self.n_experts = n_experts
@@ -414,27 +418,50 @@ class SwitchFeedForward(nn.Module):
         # Routing layer and softmax
         self.switch = nn.Linear(d_model, n_experts)
         self.softmax = nn.Softmax(dim=-1)
-
-        self.to(torch.device("cuda:0" if torch.cuda.is_available() else "cpu"))
-    def forward(self, x: torch.Tensor):
+        self.to('cuda:'+ str(configs.gpu))
+    def forward(self, x: torch.Tensor,sep):
         """
         * `x` is the input to the switching module with shape `[seq_len, batch_size, d_model]`
         """
 
         # Capture the shape to change shapes later
-        seq_len, batch_size, d_model = x.shape
+        batch_size, seq_len, d_model = x.shape
         # Flatten the sequence and batch dimensions
+        # print('seq_len',seq_len)
+        # print('batch_size',batch_size)
+        # print('d_model',d_model)
+        T = seq_len * batch_size
         x = x.view(-1, d_model)
-
         # Get routing probabilities for each of the tokens.
         # $$p_i(x) = \frac{e^{h(x)_i}}{\sum^N_j e^{h(x)_j}}$$
         # where $N$ is the number of experts `n_experts` and
         # $h(\cdot)$ is the linear transformation of token embeddings.
         route_prob = self.softmax(self.switch(x))
 
+        #
+        # print('route_prob',route_prob.shape)
         # Get the maximum routing probabilities and the routes.
         # We route to the expert with highest probability
         route_prob_max, routes = torch.max(route_prob, dim=-1)
+        # print('route_prob_max',route_prob_max.shape)
+        # print('routes',routes.shape)
+
+        loss_e = 0
+        # for j in range(batch_size):
+        #     if sep[j][1]-sep[j][0]>10:
+        #         sep[j][1] = sep[j][0]+10
+        #     y = x[(j*seq_len + sep[j][0]):(j*seq_len + sep[j][1])]
+        #     part_route_prob = route_prob[(j*seq_len + sep[j][0]):(j*seq_len + sep[j][1])]
+        #     part_route_prob_max, part_routes = torch.max(part_route_prob, dim=-1)
+        #     part_indexes_list = [torch.eq(part_routes, i).nonzero(as_tuple=True)[0] for i in range(self.n_experts)]
+        #     part_counts = y.new_tensor([len(part_indexes_list[i]) for i in range(self.n_experts)])
+        #     part_e_loss = 0.00001 * self.n_experts * (1-sum(
+        #         [(part_counts[i] / part_route_prob.shape[0]) * (part_route_prob.sum(0)[i] / part_route_prob.shape[0]) for i in range(self.n_experts)]))
+        #     # print(part_counts)
+        #     # print(part_route_prob)
+        #     loss_e += part_e_loss
+
+
 
         # Get indexes of tokens going to each expert
         indexes_list = [torch.eq(routes, i).nonzero(as_tuple=True)[0] for i in range(self.n_experts)]
@@ -467,7 +494,7 @@ class SwitchFeedForward(nn.Module):
                 indexes_list[i] = indexes_list[i][:capacity]
 
         # Get outputs of the expert FFNs
-        expert_output = [self.experts[i].to(0)(x[indexes_list[i], :]) for i in range(self.n_experts)]
+        expert_output = [self.experts[i](x[indexes_list[i], :]) for i in range(self.n_experts)]
 
         # Assign to final output
         for i in range(self.n_experts):
@@ -487,8 +514,17 @@ class SwitchFeedForward(nn.Module):
             final_output = final_output * (route_prob_max / route_prob_max.detach()).view(-1, 1)
 
         # Change the shape of the final output back to `[seq_len, batch_size, d_model]`
-        final_output = final_output.view(seq_len, batch_size, d_model)
+        final_output = final_output.view(batch_size, seq_len, d_model)
+        # balan_loss = 0.0001 * self.n_experts * sum([(counts[i]/T)*(route_prob.sum(0)[i]/T) for i in range(self.n_experts)])
+        balan_loss = 0
 
+
+        # print('balan_loss',balan_loss)
+        # print(balan_loss)
+        #balan_loss = 0.001 * self.n_experts * sum([(capacity - len(indexes_list[i])) for i in range(self.n_experts)])
+        # print('counts:',counts)
+        # print('route_prob:',route_prob.sum(0))
+        # print('route_prob_max:',route_prob_max)
         # Return
         #
         # * the final output
@@ -498,10 +534,14 @@ class SwitchFeedForward(nn.Module):
         # * routing probabilities of the selected experts
         #
         # These are used for the load balancing loss and logging
-        return final_output, counts, route_prob.sum(0), len(dropped), route_prob_max
+        # return final_output, counts, route_prob.sum(0), len(dropped), route_prob_max
+        return final_output, balan_loss + loss_e
 class T5Attention(nn.Module):
-    def __init__(self, config: T5Config, has_relative_attention_bias=False):
+    # def __init__(self, config: T5Config, has_relative_attention_bias=False):
+    def __init__(self, config, layer_count, has_relative_attention_bias=False):
         super().__init__()
+        from __main__ import configs as cg
+        self.cg= cg
         self.is_decoder = config.is_decoder
         self.has_relative_attention_bias = has_relative_attention_bias
         self.relative_attention_num_buckets = config.relative_attention_num_buckets
@@ -515,10 +555,11 @@ class T5Attention(nn.Module):
         self.k = nn.Linear(self.d_model, self.inner_dim, bias=False)
         self.v = nn.Linear(self.d_model, self.inner_dim, bias=False)
         self.o = nn.Linear(self.inner_dim, self.d_model, bias=False)
-
-        if self.is_decoder == False:
+        self.layer_count = layer_count
+        if self.is_decoder == False and self.layer_count>= self.cg.start_layer and self.layer_count<= self.cg.end_layer and self.cg.e!=1:
+            print('进来了')
             self.norm_ff = nn.LayerNorm(self.d_model)#.to(self.q.parameters().__next__().device)
-            self.expert_forward = SwitchFeedForward(capacity_factor=0.8,drop_tokens=True,is_scale_prob=True,n_experts=3,d_model=self.d_model)#.to(self.q.parameters().__next__().device)
+            self.expert_forward = SwitchFeedForward(capacity_factor=1.5,drop_tokens=True,is_scale_prob=True,n_experts=self.cg.e,d_model=self.d_model)#.to(self.q.parameters().__next__().device)
 
 
         # self.fusion = KGTXTFusion(config)
@@ -791,12 +832,14 @@ class T5Attention(nn.Module):
 
         attn_output = unshape(torch.matmul(attn_weights, value_states))  # (batch_size, seq_length, dim)
         attn_output = self.o(attn_output)
+        balance_loss = None
        # 需要norm + moe + dropout
-        if self.is_decoder == False:
+        if self.is_decoder == False and self.layer_count>= self.cg.start_layer and self.layer_count<= self.cg.end_layer and self.cg.e!=1:
             attn_output = self.norm_ff(attn_output)
-            attn_output, _, _, _, _ = self.expert_forward(attn_output)
-            attn_weights = nn.functional.dropout(
-                attn_weights, p=self.dropout, training=self.training
+            # attn_output, _, _, _, _ = self.expert_forward(attn_output)
+            attn_output, balance_loss = self.expert_forward(attn_output,sep)
+            attn_output = nn.functional.dropout(
+                attn_output, p=self.dropout, training=self.training
             )  # (batch_size, n_heads, seq_length, key_length)
         # if self.is_decoder == False:
         #      attn_output = self.o(attn_output)[:,4:,:]
@@ -809,7 +852,7 @@ class T5Attention(nn.Module):
 
         if output_attentions:
             outputs = outputs + (attn_weights,)
-        return outputs,fusion_output,qks
+        return outputs,fusion_output,qks,balance_loss
 
 class KGAttention(nn.Module):
     def __init__(self, config: T5Config,has_relative_attention_bias = None):
@@ -1057,9 +1100,9 @@ class KGBlock(nn.Module):
         return outputs
 
 class T5LayerSelfAttention(nn.Module):
-    def __init__(self, config, has_relative_attention_bias=False):
+    def __init__(self, config, layer_count,has_relative_attention_bias=False):
         super().__init__()
-        self.SelfAttention = T5Attention(config, has_relative_attention_bias=has_relative_attention_bias)
+        self.SelfAttention = T5Attention(config, layer_count, has_relative_attention_bias=has_relative_attention_bias)
         self.layer_norm = T5LayerNorm(config.d_model, eps=config.layer_norm_epsilon)
         self.dropout = nn.Dropout(config.dropout_rate)
         self.is_decoder = config.is_decoder
@@ -1078,7 +1121,7 @@ class T5LayerSelfAttention(nn.Module):
         sep=None,
     ):
         normed_hidden_states = self.layer_norm(hidden_states)
-        attention_output, fusion_output, qks = self.SelfAttention(
+        attention_output, fusion_output, qks, balance_loss = self.SelfAttention(
             normed_hidden_states,
             mask=attention_mask,
             position_bias=position_bias,
@@ -1094,13 +1137,13 @@ class T5LayerSelfAttention(nn.Module):
 
         hidden_states = hidden_states + self.dropout(attention_output[0])
         outputs = (hidden_states,) + attention_output[1:]  # add attentions if we output them
-        return outputs,fusion_output,qks
+        return outputs,fusion_output,qks,balance_loss
 
 
 class T5LayerCrossAttention(nn.Module):
-    def __init__(self, config):
+    def __init__(self, config,layer_count):
         super().__init__()
-        self.EncDecAttention = T5Attention(config, has_relative_attention_bias=False)
+        self.EncDecAttention = T5Attention(config, layer_count, has_relative_attention_bias=False)
         self.layer_norm = T5LayerNorm(config.d_model, eps=config.layer_norm_epsilon)
         self.dropout = nn.Dropout(config.dropout_rate)
 
@@ -1118,7 +1161,7 @@ class T5LayerCrossAttention(nn.Module):
         entity_hidden_state=None,
     ):
         normed_hidden_states = self.layer_norm(hidden_states)
-        attention_output,fusion_output,qks = self.EncDecAttention(
+        attention_output,fusion_output,qks,balance_loss = self.EncDecAttention(
             normed_hidden_states,
             mask=attention_mask,
             key_value_states=key_value_states,
@@ -1151,13 +1194,13 @@ class KGT5Intermediate(nn.Module):
         # hidden_states = self.intermediate_act_fn(hidden_states)
         return hidden_states
 class T5Block(nn.Module):
-    def __init__(self, config, has_relative_attention_bias=False):
+    def __init__(self, config, layer_count, has_relative_attention_bias=False):
         super().__init__()
         self.is_decoder = config.is_decoder
         self.layer = nn.ModuleList()
-        self.layer.append(T5LayerSelfAttention(config, has_relative_attention_bias=has_relative_attention_bias))
+        self.layer.append(T5LayerSelfAttention(config, layer_count,has_relative_attention_bias=has_relative_attention_bias))
         if self.is_decoder:
-            self.layer.append(T5LayerCrossAttention(config))
+            self.layer.append(T5LayerCrossAttention(config,layer_count))
         self.layer.append(T5LayerFF(config))
         self.kgtfusion = KGT5Intermediate(config)
     def forward(
@@ -1198,7 +1241,7 @@ class T5Block(nn.Module):
 
         # if entity_hidden_state!=None and self.is_decoder == False:
         #     hidden_states = hidden_states + entity_hidden_state
-        self_attention_outputs, fusion_output, qks = self.layer[0](
+        self_attention_outputs, fusion_output, qks, balance_loss = self.layer[0](
             hidden_states,#编码器【64，63，512】，解码器[64,29,512]
             attention_mask=attention_mask,#编码器[64,1,1,63]0和-10000,解码器是[64,1,29,29]
             position_bias=position_bias,#都是N
@@ -1272,7 +1315,7 @@ class T5Block(nn.Module):
             outputs = outputs + attention_outputs
         if output_qks:
             outputs += (qks,)
-
+        outputs += (balance_loss,)
         return outputs  # hidden-states, present_key_value_states, (self-attention position bias), (self-attention weights), (cross-attention position bias), (cross-attention weights)
 
 
@@ -1380,7 +1423,7 @@ class T5Stack(T5PreTrainedModel):
         self.is_decoder = config.is_decoder
 
         self.block = nn.ModuleList(
-            [T5Block(config, has_relative_attention_bias=bool(i == 0)) for i in range(config.num_layers)]
+            [T5Block(config, layer_count = i,has_relative_attention_bias=bool(i == 0)) for i in range(config.num_layers)]
         )
         # if self.is_decoder == False:
         #     self.kgblock = nn.ModuleList(
@@ -1456,6 +1499,7 @@ class T5Stack(T5PreTrainedModel):
 
     ):
         # Model parallel
+        bal_loss = 0
         if self.model_parallel:
             torch.cuda.set_device(self.first_device)
             self.embed_tokens = self.embed_tokens.to(self.first_device)
@@ -1618,12 +1662,17 @@ class T5Stack(T5PreTrainedModel):
             # hidden-states, key-value-states, (self-attention position bias), (self-attention weights), (cross-attention position bias), (cross-attention weights)
             if use_cache is False:
                 layer_outputs = layer_outputs[:1] + (None,) + layer_outputs[1:]
-
+            if self.is_decoder == False:
+                balance_loss = layer_outputs[-1]
+                if balance_loss!= None:
+                    bal_loss = bal_loss + balance_loss
             hidden_states, present_key_value_state = layer_outputs[:2]
             # We share the position biases between the layers - the first layer store them
             # layer_outputs = hidden-states, key-value-states (self-attention position bias), (self-attention weights),
             # (cross-attention position bias), (cross-attention weights)
             position_bias = layer_outputs[2]
+
+
             if self.is_decoder and encoder_hidden_states is not None:
                 encoder_decoder_position_bias = layer_outputs[4 if output_attentions else 3]
             # append next layer key value states
@@ -1666,7 +1715,7 @@ class T5Stack(T5PreTrainedModel):
             hidden_states=all_hidden_states,
             attentions=all_attentions,
             cross_attentions=all_cross_attentions,
-        )
+        ),bal_loss
 
 
 T5_START_DOCSTRING = r"""
