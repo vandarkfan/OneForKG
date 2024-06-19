@@ -266,29 +266,31 @@ class T5Finetuner(pl.LightningModule):
     def complex_s(self, mode, ent_ids, rel_ids):
         to_score_entity = self.ent_embed.weight
         to_score_entity = to_score_entity[:, :int(self.prompt_dim/2)], to_score_entity[:, int(self.prompt_dim/2):]
-        if mode[0] == 'tail':
-            lhs = self.ent_embed(ent_ids)
-            rel = self.rel_embed(rel_ids)
-            # rhs = self.ent_embed(target_entity[i])
-            # rhs = torch.squeeze(rhs, dim=0)
-            lhs = lhs[:,:int(self.prompt_dim/2)], lhs[:,int(self.prompt_dim/2):]
-            rel = rel[:,:int(self.prompt_dim/2)], rel[:,int(self.prompt_dim/2):]
-            # rhs = rhs[:self.prompt_dim], rhs[self.prompt_dim:]
-            rhs_scores = (
-                    (lhs[0] * rel[0] - lhs[1] * rel[1]) @ to_score_entity[0].transpose(0, 1) +
-                    (lhs[0] * rel[1] + lhs[1] * rel[0]) @ to_score_entity[1].transpose(0, 1)
-            )
-            scores = rhs_scores
-        else:
-            rhs = self.ent_embed(ent_ids)
-            rel = self.rel_embed(rel_ids + self.configs.n_rel)
-            rhs = rhs[:,:int(self.prompt_dim/2)], rhs[:,int(self.prompt_dim/2):]
-            rel = rel[:,:int(self.prompt_dim/2)], rel[:,int(self.prompt_dim/2):]
-            lhs_scores = (
-                (rel[0] * rhs[0] + rel[1] * rhs[1]) @ to_score_entity[0].transpose(0, 1) +
-                (rel[0] * rhs[1] - rel[1] * rhs[0]) @ to_score_entity[1].transpose(0, 1)
-            )
-            scores = lhs_scores
+        scores = torch.zeros([len(ent_ids), self.configs.n_ent])
+        for i in range(len(ent_ids)):
+            if mode[i] == 'tail':
+                lhs = self.ent_embed.weight[ent_ids[i]].unsqueeze(0)
+                rel = self.rel_embed.weight[rel_ids[i]].unsqueeze(0)
+                # rhs = self.ent_embed(target_entity[i])
+                # rhs = torch.squeeze(rhs, dim=0)
+                lhs = lhs[:,:int(self.prompt_dim/2)], lhs[:,int(self.prompt_dim/2):]
+                rel = rel[:,:int(self.prompt_dim/2)], rel[:,int(self.prompt_dim/2):]
+                # rhs = rhs[:self.prompt_dim], rhs[self.prompt_dim:]
+                rhs_scores = (
+                        (lhs[0] * rel[0] - lhs[1] * rel[1]) @ to_score_entity[0].transpose(0, 1) +
+                        (lhs[0] * rel[1] + lhs[1] * rel[0]) @ to_score_entity[1].transpose(0, 1)
+                )
+                scores[i] = rhs_scores
+            else:
+                rhs = self.ent_embed.weight[ent_ids[i]].unsqueeze(0)
+                rel = self.ent_embed.weight[rel_ids[i] + self.configs.n_rel].unsqueeze(0)
+                rhs = rhs[:,:int(self.prompt_dim/2)], rhs[:,int(self.prompt_dim/2):]
+                rel = rel[:,:int(self.prompt_dim/2)], rel[:,int(self.prompt_dim/2):]
+                lhs_scores = (
+                    (rel[0] * rhs[0] + rel[1] * rhs[1]) @ to_score_entity[0].transpose(0, 1) +
+                    (rel[0] * rhs[1] - rel[1] * rhs[0]) @ to_score_entity[1].transpose(0, 1)
+                )
+                scores[i] = lhs_scores
         return scores
     # def validation_step(self, batched_data, batch_idx, dataset_idx):
     def validation_step(self, batched_data, batch_idx):
@@ -320,9 +322,10 @@ class T5Finetuner(pl.LightningModule):
             # test_triple: .shape: (batch_size, 3)
             self.test_triple = batched_data['test_triple']
             mode = batched_data['mode']
-
-
+            ent_ids = batched_data['ent_ids']
+            rel_ids = batched_data['rel_ids']
             # entity_id_embed = self.ent_embed(ent_ids)
+            n_ary = batched_data['n_ary']
 
             addsource = None
 
@@ -333,11 +336,40 @@ class T5Finetuner(pl.LightningModule):
             group_text = [generated_text[i:i + self.configs.num_beams] for i in range(0, len(generated_text), self.configs.num_beams)]
             # # #
             # # # #
+            if self.w>0.00001:
+                scores_t5 = scores_t5.contiguous().view(-1, self.configs.num_beams)
+                scores_t5 = torch.softmax(scores_t5, dim=1)
+                generated_id = -1 * torch.ones([len(generated_text)])
+                for i in range(len(generated_text)):
+                    if generated_text[i] in self.entname2id.keys():
+                        generated_id[i] = self.entname2id[generated_text[i]]
+                generated_id = generated_id.contiguous().view(-1, self.configs.num_beams)
+
+
+                scores_complex = self.complex_s(mode = mode, ent_ids = ent_ids, rel_ids = rel_ids)
+                scores_complex2t5 = -1 * torch.ones([generated_id.shape[0], generated_id.shape[1]])
+                for i in range(generated_id.shape[0]):
+                    for j in range(generated_id.shape[1]):
+                        if generated_id[i,j]!=-1:
+                            scores_complex2t5[i,j] = scores_complex[i, int(generated_id[i,j])]#[8,40]里面不对劲的玩意都变成-10000了，有数字的可能在-7~7之间
+                        else:
+                            scores_complex2t5[i, j] = -10000
+                scores_complex2t5 = torch.softmax(scores_complex2t5, dim=1)
+                scores = (1 - self.w) * scores_t5 + self.w * scores_complex2t5.to(src_ids.device)
+                sorted_scores, indices = torch.sort(scores, descending=True, dim=-1)
+                sorted_group_text = []
+                for i in range(len(group_text)):
+                    sorted_group_text_dan = []
+                    for j in range(self.configs.num_beams):
+                        sorted_group_text_dan.append(group_text[i][indices[i,j]])
+                    sorted_group_text.append(sorted_group_text_dan)
+                group_text = sorted_group_text
 
 
             # if self.configs.log_text:
             #     self.log_generation(group_text, src_names, target_names, batch_idx, dataset_idx)
             ranks = []
+
             for i, texts in enumerate(group_text):
                 real_triple = self.test_triple[i][:-2]
                 index = tuple()
@@ -346,8 +378,8 @@ class T5Finetuner(pl.LightningModule):
                         index += (j,)
                 hr_key = index
                 all_gt_ids = self.all_ground_truth[hr_key]#list里面是这个实体应该过滤的id
-                all_gt_seqs = [self.ent_name_list[ids] for ids in all_gt_ids]
 
+                all_gt_seqs = [self.ent_name_list[ids] for ids in all_gt_ids]
                 if mode[0] == 'tail':
                     if self.configs.dataset == 'NELL':
                         nell_ids = self.typecons[str(hr_key[1])]['tail']  # list里面是这个实体应该过滤的id
@@ -423,7 +455,7 @@ class T5Finetuner(pl.LightningModule):
                     ranks.append(random.randint(self.configs.num_beams + 1, self.configs.n_ent))
 
 
-            out = {'ranks': ranks}
+            out = {'ranks': ranks,'n_ary':n_ary}
             return out
 
     def decode(self, src_ids, src_mask, batched_data,entity_hidden_state, addsource):
@@ -628,6 +660,7 @@ class T5Finetuner(pl.LightningModule):
             return
         pred_tail_out = outs
         agg_total_out = dict()
+        # agg_total_out['rank'] = []
         for out in pred_tail_out:
             for key, value in out.items():
                 if key in agg_total_out:
@@ -636,9 +669,30 @@ class T5Finetuner(pl.LightningModule):
                     agg_total_out[key] = value
 
         ranks = agg_total_out['ranks']
+        n_ary = agg_total_out['n_ary']
+        # rank2 = []
+        # rank3 = []
+        # rank4 = []
+        # rank5 = []
+        # for i in range(len(ranks)):
+        #     if n_ary[i]==3:
+        #         rank3.append(ranks[i])
+        #     if n_ary[i]==4:
+        #         rank4.append(ranks[i])
+        #     if n_ary[i]==2:
+        #         rank2.append(ranks[i])
+        #     if n_ary[i]==5:
+        #         rank5.append(ranks[i])
         del agg_total_out['ranks']
-
-
+        del agg_total_out['n_ary']
+        # perf3= get_performance_wikipeople(self, rank3)
+        # perf4= get_performance_wikipeople(self, rank4)
+        # perf2= get_performance_wikipeople(self, rank2)
+        # perf5= get_performance_wikipeople(self, rank5)
+        # print(perf2)
+        # print(perf4)
+        # print(perf3)
+        # print(perf5)
         perf = get_performance_wikipeople(self, ranks)
         print(perf)
 

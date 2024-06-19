@@ -667,19 +667,31 @@ class Hrelation_TestDataset(Dataset):
             else:
                 src = src + '<extra_id_0>' + ' | '
 
+                if i!=0:
+                    mode = 'tail'
+                    ent_ids = trip[0]
+                    rel_ids = trip[i - 1]
+                else:
+                    mode = 'head'
+                    ent_ids = trip[2]
+                    rel_ids = trip[1]
+
         tokenized_src = self.tokenizer(src, max_length=self.configs.src_max_length, truncation=True)
         source_ids = tokenized_src.input_ids
         source_mask = tokenized_src.attention_mask
         source_names = src
         target_names = self.ent_name_list[test_triple[-1]]
-
+        n_ary = len(ent_index)
         out = {
             'source_ids': source_ids,
             'source_mask': source_mask,
             'source_names': source_names,
             'target_names': target_names,
             'test_triple': test_triple,
-            'mode': self.mode,
+            'mode': mode,
+            'ent_ids': ent_ids,
+            'rel_ids': rel_ids,
+            'n_ary': n_ary,
         }
         if self.configs.use_soft_prompt:
             input_index, soft_prompt_index, _ = get_soft_prompt_pos(self.configs, source_ids, None, self.mode)
@@ -695,6 +707,9 @@ class Hrelation_TestDataset(Dataset):
         agg_data['target_names'] = [dt['target_names'] for dt in data]
         agg_data['test_triple'] = batchify(data, 'test_triple', return_list=True)
         agg_data['mode'] = [out['mode'] for out in data]
+        agg_data['ent_ids'] = [out['ent_ids'] for out in data]
+        agg_data['rel_ids'] = [out['rel_ids'] for out in data]
+        agg_data['n_ary'] = [out['n_ary'] for out in data]
         if self.configs.use_soft_prompt:
             agg_data['input_index'] = batchify(data, 'input_index', padding_value=0)
             agg_data['soft_prompt_index'] = batchify(data, 'soft_prompt_index')

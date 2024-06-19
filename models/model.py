@@ -488,7 +488,7 @@ class T5Finetuner(pl.LightningModule):
                             else:
                                 top_entities.add(text)
                                 rank += 1
-                    # if int(ent_ids[i])==27882 and int(rel_ids[i])==3 and mode[i]=='tail':
+                    # if int(ent_ids[i])==20170 and int(rel_ids[i])==9 and mode[i]=='head':
                     #     print(int(ent_ids[i]))
                     #     print(self.ent_name_list[int(ent_ids[i])])
                     #     print('scores_t5:')
@@ -501,7 +501,7 @@ class T5Finetuner(pl.LightningModule):
                     #     print(sorted_scores[i, :])
                     #     print('group_text:')
                     #     print(group_text[i])
-                    # if int(ent_ids[i])==23514 and int(rel_ids[i])==5 and mode[i]=='tail':
+                    # if int(ent_ids[i])==31015 and int(rel_ids[i])==4 and mode[i]=='head':
                     #     print(int(ent_ids[i]))
                     #     print(self.ent_name_list[int(ent_ids[i])])
                     #     print('scores_t5:')

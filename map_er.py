@@ -100,7 +100,7 @@ def t5_cluster(filesave,dataset,n_cluster):
 
 if __name__ == '__main__':
     # t5_er('WN18RR')
-    filesave = 'complex_icews14-1536'
-    dataset = 'ICEWS14'
+    filesave = 'complex_wikipeople-1536'
+    dataset = 'WikiPeople'
     # t5_er(filesave = filesave,dataset=dataset)
-    t5_cluster(filesave = filesave,dataset=dataset,n_cluster = 500)
+    t5_cluster(filesave = filesave,dataset=dataset,n_cluster = 30)
