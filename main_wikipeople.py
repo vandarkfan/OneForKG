@@ -20,9 +20,9 @@ os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
 
 def main():
     ## read triples
-    train_triples = json.load(open('data/processed/WikiPeople/train2idname.tar'))
-    valid_triples = json.load(open('data/processed/WikiPeople/valid2idname.tar'))
-    test_triples = json.load(open('data/processed/WikiPeople/test2idname.tar'))
+    train_triples = json.load(open('data/processed/WikiPeople-fasle/train2idname.tar'))
+    valid_triples = json.load(open('data/processed/WikiPeople-fasle/valid2idname.tar'))
+    test_triples = json.load(open('data/processed/WikiPeople-fasle/test2idname.tar'))
     # test_triples = read(configs, configs.dataset_path, configs.dataset, 'beamkgc_rebuttle.txt')
     all_triples = train_triples + valid_triples + test_triples
     # checkpoint111 = torch.load(configs.model_path)
