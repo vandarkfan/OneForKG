@@ -13008,7 +13008,7 @@
 13006	borough of pennsylvania west chester
 13007	borough of new jersey red bank
 13008	human bahá'u'lláh
-13009	Gongzi Fei, Son of Duke Mu of Zheng
+13009	No label defined
 13010	governorates and oblasts of russian empire in 1914 tula governorate
 13011	Glenda
 13012	civil parish deal
@@ -13032,7 +13032,7 @@
 13030	Hammond
 13031	human françois fillon
 13032	human paul iv
-13033	Yu Wenzhi
+13033	No label defined
 13034	human pope pius ii
 13035	Grand Master of the Teutonic Knights
 13036	human thabo mbeki
@@ -13255,13 +13255,13 @@
 13253	federal republic nigeria
 13254	human halle berry
 13255	Zhu Pian
-13256	Li Chong
-13257	Li Bi
+13256	Li ?
+13257	No label defined
 13258	Li Ji
 13259	Li Kan
 13260	Li Dong
 13261	Li Bao
-13262	Li Xi
+13262	No label defined
 13263	Li Yuanyi
 13264	association football club valencia football club
 13265	Márcio
@@ -13486,7 +13486,7 @@
 13484	national under-18 association football team england national under-18 association football team
 13485	national association football team england national under-20 association football team
 13486	human gabriel fauré
-13487	paraplegia, impairment in motor or sensory function of the lower extremities
+13487	unknown paraplegia
 13488	human klaus clusius
 13489	surname castro
 13490	association football club córdoba cf
@@ -13587,47 +13587,47 @@
 13585	literary award hugo award for best novelette
 13586	Linköping Cathedral Congregation
 13587	corporate title head teacher
-13588	Changle Fengshi
-13589	Chen Shuyan
-13590	Chen Shujian
+13588	No label defined
+13589	No label defined
+13590	No label defined
 13591	Chen Shuxing
-13592	Chen Shukuang
-13593	Chen Shutan
+13592	No label defined
+13593	No label defined
 13594	Chen Shuxuan
-13595	Chen Shuping
-13596	Chen Shuao
-13597	Chen Shuwen
-13598	Chen Shuxian
-13599	Chen Shucheng
+13595	No label defined
+13596	No label defined
+13597	No label defined
+13598	No label defined
+13599	No label defined
 13600	Chen Shumu
-13601	Chen Shuchun
-13602	Chen Shurong
-13603	Chen Shumo
-13604	Chen Shulong
-13605	Chen Shuxiong
-13606	Chen Shushao
-13607	Chen Yan
-13608	Chen Di
-13609	Chen Qian
-13610	Chen Jing
+13601	No label defined
+13602	No label defined
+13603	No label defined
+13604	No label defined
+13605	No label defined
+13606	No label defined
+13607	No label defined
+13608	No label defined
+13609	No label defined
+13610	No label defined
 13611	Chen Shuqing
 13612	Chen Shubiao
 13613	Chen Shuming
-13614	Chen Shuzhong
-13615	Chen Shuqi
+13614	No label defined
+13615	No label defined
 13616	Chu of Huo
 13617	Saskatoon
 13618	human holly hunter
-13619	Gao Renjian
-13620	Gao Renguang
+13619	No label defined
+13620	No label defined
 13621	Gao Renji
-13622	Gao Renzhi
-13623	Gao Renying
-13624	Gao Renqian
-13625	Gao Renyi
-13626	Gao Renya
-13627	Gao Kuo
-13628	Gao Zhen
+13622	No label defined
+13623	No label defined
+13624	No label defined
+13625	No label defined
+13626	No label defined
+13627	No label defined
+13628	No label defined
 13629	Princess Gaoyang
 13630	human karl lauterbach
 13631	human piotr ożarowski
@@ -13703,7 +13703,7 @@
 13701	Liu Hong
 13702	Liu Yi
 13703	Liu Xiuye
-13704	Liu Xiuqian
+13704	human unknown 
 13705	Liu Yifu
 13706	Liu Xiufan
 13707	national university tohoku university
@@ -14108,7 +14108,7 @@
 14106	profession anatomist
 14107	female given name ursula
 14108	profession chess player
-14109	blindness, complete or nearly complete lack of vision
+14109	unknown blindness
 14110	Princess Linru
 14111	Li Shi
 14112	Princess Linzhen
@@ -14127,7 +14127,7 @@
 14125	Princess Renshou
 14126	Renfu Diji
 14127	human princess xianju
-14128	Princess Xianyou
+14128	No label defined
 14129	Princess Daiguo
 14130	Yifu Diji
 14131	record label chrysalis records
@@ -14148,9 +14148,9 @@
 14146	position member of the national people's congress
 14147	Yasakairihime no mikoto
 14148	human hachijō-no-miya yasuhito-shinnō
-14149	Gongzi Yan, Son of Duke Mu of Zheng
-14150	Gongzi Qvji, Son of Duke Mu of Zheng
-14151	Gongzi Xi, Son of Duke Mu of Zheng
+14149	No label defined
+14150	No label defined
+14151	No label defined
 14152	human mary steenburgen
 14153	Clan Xiao of Lanling
 14154	human carrie fisher
@@ -14166,7 +14166,7 @@
 14164	Liu Xiaoji
 14165	Liu Xiaomin
 14166	Liu Xiaoying
-14167	Liu Song
+14167	No label defined
 14168	Liu Yan
 14169	human liu pengzu
 14170	Liu Zhi
@@ -14189,22 +14189,22 @@
 14187	Maeda Chiyo
 14188	Liu Cheng
 14189	Liu Ang
-14190	Liu You
+14190	No label defined
 14191	Liu Zishang
-14192	Liu Zishi
+14192	No label defined
 14193	Liu Ziyue
 14194	Liu Zifang
-14195	Liu Ziwen
-14196	Liu Ziqi
-14197	Liu Zikuang
-14198	Liu Zishen
-14199	Liu Zixuan
-14200	Liu Zichan
-14201	Liu Zisui
-14202	Liu Ziheng
-14203	Liu Ziqv
-14204	Liu Ziyong
-14205	Liu Zifeng
+14195	No label defined
+14196	No label defined
+14197	No label defined
+14198	No label defined
+14199	No label defined
+14200	No label defined
+14201	No label defined
+14202	No label defined
+14203	No label defined
+14204	No label defined
+14205	No label defined
 14206	human liu ji
 14207	Liu Kang
 14208	Liu Jian
@@ -14212,14 +14212,14 @@
 14210	Liu Hui
 14211	Liu Dan
 14212	municipality røros
-14213	Liu Zhijing
+14213	No label defined
 14214	Liu Chang
 14215	Liu Yan
 14216	Liu Bin
 14217	Liu Fa
-14218	Liu Xi
+14218	No label defined
 14219	Liu Xian
-14220	Liu Hui
+14220	No label defined
 14221	Liu Xu
 14222	Liu Shun
 14223	Liu Yan
@@ -14245,7 +14245,7 @@
 14243	grade of an order cross of the order of merit of the federal republic of germany
 14244	Princess Anna Sophie of Schwarzburg-Rudolstadt
 14245	defunct sports team vancouver whitecaps
-14246	Princess Huayang (Tang Dynasty)
+14246	No label defined
 14247	human guido reni
 14248	Jimmy Cliff
 14249	association football club stranraer f.c.
@@ -14282,13 +14282,13 @@
 14280	Hezheng Gongzhu
 14281	Hefu Diji
 14282	Princess Heyi
-14283	Princess Xian'an
+14283	No label defined
 14284	music genre hardcore punk
 14285	human susana naidich
 14286	Princess Tangxing
 14287	Tang
-14288	Princess Tang'an
-14289	Princess Tangyang
+14288	No label defined
+14289	No label defined
 14290	Shang
 14291	human rosanna arquette
 14292	Li Shi
@@ -14299,7 +14299,7 @@
 14297	Prince Junsi
 14298	Ciro
 14299	Gyōjo-hosshinnō
-14300	Shizi Kong, Son of Duke Mu of Zheng
+14300	No label defined
 14301	human princess shouning
 14302	human princess shouchun
 14303	Shoushu Diji
@@ -14311,30 +14311,30 @@
 14309	public educational institution of the united states city college of new york
 14310	human princess tiantai
 14311	higher education institution city university
-14312	Princess Taihe (Tang Dynasty Emperor)
+14312	No label defined
 14313	Princess Taihe
 14314	Villarreal CF B
 14315	Princess Taikang
 14316	human aggelos charisteas
 14317	female given name rita
 14318	human tuta
-14319	Yao Yi
+14319	No label defined
 14320	urban municipality of germany bad berleburg
-14321	Gongzi Ping, Son of Duke Mu of Zheng
-14322	Gongzi Shu, Son of Duke Mu of Zheng
-14323	Gongzi Fa, Son of Duke Mu of Zheng
-14324	Gongzi Kong, Son of Duke Mu of Zheng
-14325	Gongzi Ran, Son of Duke Mu of Zheng
+14321	No label defined
+14322	No label defined
+14323	No label defined
+14324	No label defined
+14325	No label defined
 14326	male given name jurij
-14327	Gongzi Yv, Son of Duke Mu of Zheng
-14328	Yuwen Jian
+14327	No label defined
+14328	No label defined
 14329	Yuwen Zhao
-14330	Yuwen Sheng
-14331	Yuwen Chen
+14330	No label defined
+14331	No label defined
 14332	Yuwen Da
-14333	Yuwen You
-14334	Yuwen Tong
-14335	Yuwen Zhen
+14333	No label defined
+14334	No label defined
+14335	No label defined
 14336	human richard mentor johnson
 14337	Princess Anhua
 14338	Li Shi
@@ -14361,11 +14361,11 @@
 14359	male given name josip
 14360	human clarence "gatemouth" brown
 14361	human renato dulbecco
-14362	Princess Ningguo, Ming dynasty
-14363	Princess Ning'an
+14362	human unknown 
+14363	human unknown 
 14364	Princess Ningde
 14365	human thomas a. steitz
-14366	Princess Baoqing
+14366	human unknown 
 14367	human peter diamond
 14368	Princess Shouchang
 14369	historical country moldavia
@@ -14465,16 +14465,16 @@
 14463	princezna Te-an
 14464	Kiyo-hime
 14465	human tamaki
-14466	Princess Deqing
-14467	Princess Deqing (Emperor Zhaozong of Tang)
-14468	Princess Deqing (Emperor Xianzong of Ming)
+14466	No label defined
+14467	Princess Deqing
+14468	Princess Deqing
 14469	human oskar lafontaine
 14470	Shiki no miko
 14471	Princess Sirou
 14472	Zhao Shi
 14473	big city wałbrzych
 14474	Daoyi
-14475	Princess Daowen
+14475	human unknown 
 14476	Zhao Shi
 14477	Li Ning
 14478	Zhao Shi
@@ -14485,24 +14485,24 @@
 14483	human princess huaishu
 14484	Kaneyoshi-shinnō
 14485	Princess Cheng
-14486	Prince Qihuai, Ming dynasty prince, 6th son of Jiajing Emperor
+14486	human unknown 
 14487	female given name gwen
-14488	Zhao Shi, Yangguo Dazhanggongzhu
+14488	Zhao Shi
 14489	Yuan Xiu
-14490	Tuoba Tianci
-14491	Tuoba Tailuo
-14492	Tuoba Zitui
-14493	Tuoba Xiaoxincheng
-14494	Tuoba Xincheng
-14495	Tuoba Zhen
-14496	Tuoba Luohou
-14497	Tuoba Shen
-14498	Tuoba Huer
-14499	Tuoba Wanshou
-14500	Tuoba Changshou
-14501	Tuoba Yun
-14502	Zhao Shi, Daughter of Emperor Huizong of Song
-14503	Princess Wen'an (Emperor Dezong of Tang)
+14490	No label defined
+14491	No label defined
+14492	No label defined
+14493	No label defined
+14494	No label defined
+14495	No label defined
+14496	No label defined
+14497	No label defined
+14498	No label defined
+14499	No label defined
+14500	No label defined
+14501	No label defined
+14502	Zhao Shi
+14503	No label defined
 14504	Li Daizonger
 14505	rare disease alzheimer's disease
 14506	human settlement coleraine
@@ -14515,7 +14515,7 @@
 14513	human colin low
 14514	political party liberals
 14515	profession interpreter
-14516	Order of the Rising Sun, 1st class
+14516	unknown 
 14517	Princess Shengping
 14518	Princess Changyuan
 14519	Princess Changning
@@ -14529,7 +14529,7 @@
 14527	Princess Pukang
 14528	Princess Pukang
 14529	Princess Pukang
-14530	Princess Puci, wife of Li Jichong
+14530	human unknown 
 14531	private not-for-profit educational institution college of wooster
 14532	Cao Jun
 14533	Cao Zizheng
@@ -14547,32 +14547,32 @@
 14545	human zhu changxu
 14546	Zhu Changpu
 14547	Zhu Changrun
-14548	Zhu Huiweng
-14549	human Zhu Huitai, Chinese princess of the Ming Dynasty
-14550	Zhu Huiheng
+14548	No label defined
+14549	human unknown 
+14550	human unknown 
 14551	Zhu Huiwan
-14552	human Zhu Huichang
+14552	human unknown 
 14553	human alan macdiarmid
 14554	human zhu ji
 14555	Zhu Song
 14556	human zhu bo
-14557	human Zhu Gui
-14558	human Zhu Jing
+14557	human unknown 
+14558	human unknown 
 14559	human zhu zi
 14560	Zhu Dong
 14561	Zhu Zhi
 14562	Zhu Chun
 14563	Zhu Nan
-14564	human Zhu Ying
+14564	human unknown 
 14565	Zhu Zhen
 14566	Zhu Ying
 14567	Zhu Mo
 14568	Zhu Hui
-14569	human Zhu Tan
+14569	human unknown 
 14570	Zhu You
 14571	Zhu Youxu
 14572	Zhu Youji, Prince Qisi
-14573	human Zhu Youmo, Prince Huaihui
+14573	human unknown 
 14574	Zhu Youjian
 14575	Zhu Zhanji
 14576	Zhu Zhanyin
@@ -14589,7 +14589,7 @@
 14587	Zhu Youkai
 14588	Zhu Youzhi
 14589	Zhu Youshun
-14590	Zhu Suzhen
+14590	human unknown 
 14591	human zhu yiliu
 14592	Zhu Jianpei
 14593	Zhu Jianzhi
@@ -14598,14 +14598,14 @@
 14596	Zhu Jianlin
 14597	Zhu Jianshu
 14598	Zhu Jianze
-14599	Zhu Jianshi
+14599	No label defined
 14600	human zhu zaikui
-14601	human Zhu Zaizhen
-14602	human Zhu Zaiji
+14601	human unknown 
+14602	human unknown 
 14603	Zhu Zaihe
 14604	Prince Shang of Ying
 14605	Li Kui
-14606	Li Zhao
+14606	No label defined
 14607	Li Yi
 14608	Li Ting
 14609	Li Xi
@@ -14678,15 +14678,15 @@
 14676	Li Shen
 14677	Li Jie
 14678	Li Qi
-14679	Li Chuo
+14679	No label defined
 14680	Li Hun
 14681	Li Wan
 14682	Li Xiang
 14683	Li Ji
-14684	Li Rong (King Yun)
+14684	No label defined
 14685	Li Xian
 14686	Li Chen
-14687	Li Yuan
+14687	No label defined
 14688	Li Xun
 14689	Li Jiong
 14690	Li Shu
@@ -14735,19 +14735,19 @@
 14733	Princess Guishan
 14734	Zheng of Mao
 14735	Princess Yongle (Tang Dynasty Zong)
-14736	Princess Yonghe
-14737	Princess Yongjia (Tang Xianzong)
-14738	Princess Yongjia (Zhu Yuanzhang)
+14736	No label defined
+14737	Princess Yongjia
+14738	Princess Yongjia
 14739	human alan taylor
 14740	Princess Yong'an
 14741	Princess Yongshou
-14742	Princess Yongkang
+14742	No label defined
 14743	human sandra day o'connor
 14744	Princess Yongming
 14745	Li Shi
 14746	Princess Yongfu
 14747	Yongfu Diji
-14748	Princess Yongmu (Tang Suzong)
+14748	No label defined
 14749	Princess Yongyang
 14750	Princess Yongshun
 14751	city with millions of inhabitants peshawar
@@ -14764,7 +14764,7 @@
 14762	Friedrich von Anhalt
 14763	Princess Yanguo
 14764	newspaper the guardian
-14765	Princess Xunyang (Tang Shunzong)
+14765	No label defined
 14766	Liu Junyi
 14767	human geoffrey plantagenet, count of anjou
 14768	staff college united states army command and general staff college
@@ -15069,7 +15069,7 @@
 15067	human gian paolo baglioni
 15068	business school kellogg school of management
 15069	Cruz Azul Hidalgo
-15070	peace prize, United Nations Peace Medal
+15070	peace prize unknown 
 15071	Sima Zhou
 15072	male given name javier
 15073	Takako Matsu
@@ -15079,7 +15079,7 @@
 15077	baseball position outfielder
 15078	University of Malaya
 15079	association football club club universidad nacional
-15080	oral cavity cancer, gastrointestinal system cancer that is located in the oral cavity
+15080	unknown oral cavity cancer
 15081	independent school wellington college
 15082	Takehime
 15083	private university rikkyo university
@@ -15144,7 +15144,7 @@
 15142	human noriakira-shinnō
 15143	grand piano
 15144	male given name raoul
-15145	Regina Szafraniec
+15145	human unknown 
 15146	university kumamoto university
 15147	Wojciech Olbracht
 15148	human indira gandhi
@@ -15254,9 +15254,9 @@
 15252	human minamoto no sadamu
 15253	Minamoto no Yutaka
 15254	human minamoto no tokiwa
-15255	Minamoto no Hiromu
+15255	human unknown 
 15256	Minamoto no Akira
-15257	Minamoto no Kiyoshi
+15257	human unknown 
 15258	Minamoto no Ikeru
 15259	Minamoto no Yoshiari
 15260	Minamoto no Yoriakira
@@ -15446,17 +15446,17 @@
 15444	human shigeru sekine
 15445	Léonie Sonning Music Prize
 15446	Ano Zenjō
-15447	Abe no Miko
+15447	human unknown 
 15448	Aga no Hime Miko
 15449	Chen Bogu
 15450	Chen Boxin
 15451	Chen Boshan
 15452	Chen Bogong
 15453	Chen Bomou
-15454	Chen Bomao
-15455	Chen Shushen
-15456	Chen Shuxian
-15457	Chen Shuling
+15454	No label defined
+15455	No label defined
+15456	No label defined
+15457	No label defined
 15458	Chen Shuying
 15459	FC Slavia-Mozyr
 15460	comune of italy cassino
@@ -15476,24 +15476,24 @@
 15474	Ma Xichong
 15475	Ma Xiguang
 15476	male given name françois
-15477	Gao Yu
-15478	Gao Jie
-15479	Gao Shi
+15477	No label defined
+15478	No label defined
+15479	No label defined
 15480	human sukehito-shinnō
 15481	Darwin–Wallace Medal
-15482	Gao Ning
+15482	No label defined
 15483	Gaomi
 15484	human koshi-naishinnō
 15485	human toshio takayanagi
 15486	male given name hubertus
 15487	human kōzu-naishinnō
 15488	human manuel prado ugarteche
-15489	Gao Jun
-15490	Gao Yan
-15491	Gao Ji
-15492	Gao Run
+15489	No label defined
+15490	No label defined
+15491	No label defined
+15492	No label defined
 15493	Utah Stars
-15494	Gao Chuo
+15494	No label defined
 15495	human victoria, princess royal
 15496	human andrew cuomo
 15497	human fernando belaúnde terry
@@ -15590,7 +15590,7 @@
 15588	Medal "Guardian of National Memorials"
 15589	surname davies
 15590	human hugo claus
-15591	Michał Potocki
+15591	human unknown 
 15592	human maurice ravel
 15593	open-access publisher pepperdine university
 15594	human jacques arago
@@ -15802,13 +15802,13 @@
 15800	record label astralwerks
 15801	South Trøndelag county Culture Award
 15802	Tim Osmar
-15803	supercentenarian, someone who has lived to or passed their 110th birthday
+15803	unknown supercentenarian
 15804	association football club desportivo brasil
 15805	national academy royal norwegian society of sciences and letters
 15806	profession ophthalmologist
 15807	open-access publisher university of otago
 15808	male given name otakar
-15809	philosophy faculty, Masaryk University Faculty of Arts
+15809	philosophy faculty unknown 
 15810	human alexander iii of russia
 15811	Gore
 15812	Głogów-Żagań Piasts
@@ -15856,7 +15856,7 @@
 15854	fu kyōto prefecture
 15855	cross honour cross of the world war 1914/1918
 15856	dissolved municipality of japan tokyo city
-15857	cancer, group of diseases involving abnormal cell growth and spread
+15857	unknown cancer
 15858	han surname cai
 15859	human sigmund widmer
 15860	state of germany brandenburg
@@ -15960,7 +15960,7 @@
 15958	human laurent blank
 15959	notifiable disease tuberculosis
 15960	human diego león
-15961	diabetes mellitus, group of metabolic disorders characterized by high blood sugar levels over a prolonged period
+15961	unknown diabetes mellitus
 15962	human hamoud bin abdulaziz al saud
 15963	u.s. state idaho
 15964	eradicated disease smallpox
@@ -16019,7 +16019,7 @@
 16017	IOP Dirac Medal
 16018	Dirac Prize
 16019	PEN/Malamud Award
-16020	Vasil Delov
+16020	human unknown 
 16021	independent school st paul's school
 16022	Baumann
 16023	association football club sporting gijón
@@ -16060,14 +16060,14 @@
 16058	genre of painting floral painting
 16059	human germaine de staël
 16060	human c.v. nielsen
-16061	Carl Adolph Raben
+16061	human unknown 
 16062	human carl emil moltke
 16063	Caroline Agnese Raben
-16064	Caspar Moltke
-16065	Catharine Sophie Wilhelmine Moltke
+16064	human unknown 
+16065	human unknown 
 16066	Charlotte Emerentze Raben
 16067	human augustin-pyramus de candolle
-16068	Christian Frederik Moltke
+16068	human unknown 
 16069	human millard fillmore
 16070	Christian Magnus Frederik Moltke
 16071	human george cornewall lewis
@@ -16080,7 +16080,7 @@
 16078	position member of the folketing
 16079	human franklin pierce
 16080	Frederik Sophus Raben
-16081	Frederikke Louisie Raben
+16081	human unknown 
 16082	roman catholic metropolitan archdiocese roman catholic archdiocese of milan
 16083	human pierre arditi
 16084	human arthur honegger
@@ -16219,7 +16219,7 @@
 16217	human ioannis gennaios kolokotronis
 16218	county seat detroit
 16219	public university university of alcalá
-16220	type-1 diabetes, form of diabetes mellitus
+16220	unknown type-1 diabetes
 16221	award medal of pushkin
 16222	university building trinity hall
 16223	Wolfson College
@@ -16442,7 +16442,7 @@
 16440	human konstantin chernenko
 16441	basketball team phoenix mercury
 16442	human marc moulin
-16443	military academy, Higher Military Academy of YPA
+16443	military academy unknown 
 16444	Dane
 16445	Society of Serbian Letters
 16446	prefectures of japan kanagawa prefecture
@@ -16595,7 +16595,7 @@
 16593	human john turner
 16594	human emperor xuan of western liang
 16595	human lady diana cooper
-16596	breast cancer, cancer that originates in the mammary gland
+16596	unknown breast cancer
 16597	Edmonton Elks
 16598	profession orator
 16599	human edmund beecher wilson
@@ -16940,9 +16940,9 @@
 16938	human joan baez
 16939	human lawrence bragg
 16940	human sara runesten-petersen
-16941	hepatitis, inflammation of the liver tissue
+16941	unknown hepatitis
 16942	ice hockey position goaltender
-16943	bipolar disorder, human mental illness characterized by mood changes
+16943	unknown bipolar disorder
 16944	human humphry davy
 16945	national association football team denmark national association football team
 16946	human john dewey
@@ -17183,7 +17183,7 @@
 17181	grade of an order knight of the order of st. olav
 17182	grade of an order knight first class of the order of st. olav
 17183	comune of italy arezzo
-17184	plague, specific contagious and frequently fatal human disease caused by Yersinia pestis
+17184	unknown plague
 17185	neighbourhood woodland hills
 17186	John Crowe Ransom
 17187	Guan
@@ -17276,7 +17276,7 @@
 17274	Princess Rao'an
 17275	Princess Shengtang
 17276	Li Shi
-17277	Princess Fengyang
+17277	No label defined
 17278	association football competition 1966 fifa world cup
 17279	human marius constant
 17280	polo
@@ -17684,7 +17684,7 @@
 17682	association football club fc 08 homburg
 17683	open-access publisher university of łódź
 17684	human kendall jenner
-17685	parliamentary group, European Union Parliamentary Group in the German Bundestag
+17685	parliamentary group unknown 
 17686	female given name beatriz
 17687	advocacy group european council on foreign relations
 17688	human iosif grigulevich
@@ -18152,7 +18152,7 @@
 18150	coin collecting
 18151	profession xylographer
 18152	architectural style neoclassicism
-18153	grawemeyer award, given annually by the University of Louisville
+18153	unknown grawemeyer award
 18154	Fort Moore
 18155	human siegfried wagner
 18156	u.s. state texas
@@ -18423,7 +18423,7 @@
 18421	city in ukraine izmail
 18422	university moscow state university of railway engineering
 18423	locational surname moser
-18424	liver cirrhosis, chronic disease of the liver, characterized by fibrosis
+18424	unknown liver cirrhosis
 18425	Grand Almoner of France
 18426	übername frey
 18427	human joseph yobo
@@ -18616,7 +18616,7 @@
 18614	human victor emmanuel iii of italy
 18615	human lev bankovsky
 18616	human george carlin
-18617	Mikhail Voronkov
+18617	human unknown 
 18618	human wilhelm i of germany
 18619	open-access publisher ural federal university
 18620	human piotr fiodorov
@@ -18659,7 +18659,7 @@
 18657	highly urbanized city makati
 18658	occupational surname taylor
 18659	human marcus cyron
-18660	Ivan Podgornyy
+18660	human unknown 
 18661	military campaign invasion of poland
 18662	legislative term 18th german bundestag
 18663	human pia nielsen
@@ -19872,18 +19872,18 @@
 19870	male given name petrus
 19871	male given name petr
 19872	male given name petro
-19873	Yao Zhi
-19874	Yao Guoer
+19873	No label defined
+19874	No label defined
 19875	sovereign state russia
-19876	Liu Mai
-19877	Qian Yuanlin
+19876	No label defined
+19877	human unknown 
 19878	Cao Du
-19879	Chen's family in Yingchuan
+19879	No label defined
 19880	human katsura tarō
 19881	polish noble family ogiński family
 19882	Xiao Dan
 19883	male given name roberto
-19884	Gao Huan
+19884	No label defined
 19885	Zhao Yuanxi
 19886	human prince joachim of denmark
 19887	open-access publisher federal university of bahia
@@ -19901,7 +19901,7 @@
 19899	Du of Cai
 19900	unisex given name kendall
 19901	Hayes
-19902	Viktor Struchkov
+19902	human unknown 
 19903	Hayes & Yeading United F.C.
 19904	Grand Princess Imperial of Jingguo
 19905	Zhao Yuanfen
@@ -19921,7 +19921,7 @@
 19919	Fukang
 19920	Zhao Kai
 19921	charter city santa barbara
-19922	Princess Jinxiang
+19922	human unknown 
 19923	male given name brian
 19924	Murong Zhou
 19925	Zhao Yu
@@ -19948,7 +19948,7 @@
 19946	human princess linan
 19947	Wanyan Zongchao
 19948	Gun
-19949	Chen Yi
+19949	No label defined
 19950	Zhao Yuancheng
 19951	town of new york state smithtown
 19952	eighth daughter of Kangxi
@@ -19956,12 +19956,12 @@
 19954	human louise bourgeois
 19955	Yelü Gou'er
 19956	Wanyan Changle
-19957	Liu Yue (Han Zhao)
+19957	No label defined
 19958	human naser al-din shah qajar
 19959	princesse Yiyang
 19960	Wanyan Zongyi
 19961	Xiao Dacheng
-19962	Yao Xuan
+19962	No label defined
 19963	Chen Zhuang
 19964	human arthur cayley
 19965	unisex given name heike
@@ -20104,7 +20104,7 @@
 20102	human harold taylor wood grant
 20103	human hugh o'neill, 1st baron rathcavan
 20104	profession performing artist
-20105	cervix uterine cancer, cancer arising from the cervix
+20105	unknown cervical cancer
 20106	Archduchess Margaretha of Austria
 20107	legal profession legal scholar
 20108	medium district town königs wusterhausen
@@ -20216,7 +20216,7 @@
 20214	Zhao Xin
 20215	Zhao E
 20216	Zhao Wo
-20217	Gao Qia
+20217	No label defined
 20218	Liu Honggao
 20219	Zhao Bing
 20220	Zhao Xu
@@ -20225,7 +20225,7 @@
 20223	Zhao Cong
 20224	Zhao Cai
 20225	Zhao Gong
-20226	Chen Fan
+20226	No label defined
 20227	Liu Hongze
 20228	Liu Hongzhao
 20229	Zhao Xiang
@@ -20238,7 +20238,7 @@
 20236	Zhao Mu
 20237	Liu Hongzheng
 20238	Zhao Yue
-20239	Chen Tian
+20239	No label defined
 20240	Liu Hongmiao
 20241	Zhao Yang
 20242	Liu Hongyi
@@ -20253,7 +20253,7 @@
 20251	Liu Hongcao
 20252	Zhao Tong
 20253	Xiao Dalin
-20254	Chen Quan
+20254	No label defined
 20255	Yelü Biegute
 20256	Xiao Dachun
 20257	Zhao Shen
@@ -20263,53 +20263,53 @@
 20261	Murong Long
 20262	Murong Lou
 20263	Murong Yi
-20264	Qian Yuanbi
-20265	Qian Yuanyi
-20266	Qian Yuanji
+20264	No label defined
+20265	No label defined
+20266	No label defined
 20267	Murong Zun
 20268	Murong Lou
-20269	Qian Yuanmen
-20270	Qian Yuanxiang
+20269	No label defined
+20270	No label defined
 20271	Murong Yue
 20272	Murong Hui
-20273	Qian Yuandang
+20273	No label defined
 20274	Murong Xiu
 20275	Qian Yuanqiu
-20276	Qian Yuanlian
-20277	Qian Yuansui
-20278	Qian Yuanliao
+20276	human unknown 
+20277	No label defined
+20278	human unknown 
 20279	human prince george, duke of kent
 20280	Qian Chuansu
 20281	Qian Yuangui
-20282	Qian Hongzhan
-20283	Qian Chuanjing
-20284	Qian Chuanying
-20285	Qian Hongxuan
+20282	human unknown 
+20283	No label defined
+20284	human unknown 
+20285	human unknown 
 20286	Wang Zongren
 20287	Wang Zongjie
 20288	Wang Zongze
-20289	Wang Zongzhi
+20289	human unknown 
 20290	Wang Zongte
-20291	Wang Zongji
-20292	Wang Zonglu
-20293	Wang Zongding
+20291	human unknown 
+20292	human unknown 
+20293	human unknown 
 20294	Zhao Zhu
 20295	Zhao Ji
 20296	Zhao Fang
-20297	Liu Cao
-20298	Liu Chi
-20299	Liu Cheng
+20297	No label defined
+20298	No label defined
+20299	No label defined
 20300	Zhao Qi
-20301	Chen Shuyu
+20301	No label defined
 20302	Zhao Jia
 20303	occupation editor
 20304	Zhao Jian
 20305	Zhao Yi
 20306	Yelü Cuiba
 20307	Yelü Changshou
-20308	Liu Fu
+20308	No label defined
 20309	Yelü Fobaonu
-20310	Liu Gao
+20310	No label defined
 20311	Zhao Dong
 20312	Yelü Dianni
 20313	Zhao Yuanyi
@@ -20475,39 +20475,39 @@
 20473	surname jeong
 20474	male given name jarosław
 20475	human steen fladberg
-20476	Yao Bi
-20477	Yao Chen
-20478	Yao Guang
-20479	Yao Genger
+20476	No label defined
+20477	No label defined
+20478	No label defined
+20479	No label defined
 20480	Gong
 20481	Liu Hongji
-20482	Liu Heng
-20483	Liu Huang
-20484	Liu Hong
+20482	No label defined
+20483	No label defined
+20484	No label defined
 20485	Princess Suiping
 20486	Qian Hongzun
-20487	Liu Jing
-20488	Liu Ji
+20487	No label defined
+20488	No label defined
 20489	Yelü Jiuge
-20490	Liu Gui
-20491	Liu Kui
-20492	Liu Lang
-20493	Liu Luan
+20490	No label defined
+20491	No label defined
+20492	No label defined
+20493	No label defined
 20494	Murong You
 20495	Murong Mo
 20496	Wanyan Ningji
-20497	Liu Pu
-20498	Liu Quan
+20497	No label defined
+20498	No label defined
 20499	Murong Du
 20500	Yelü Boshi
 20501	Li Shu
 20502	Yelü Shige
 20503	Yelü Saige
-20504	Liu Tan
+20504	No label defined
 20505	Yelü Taige
 20506	Yelü Taoge
 20507	Wanyan Wohu
-20508	Liu Xv
+20508	No label defined
 20509	Wanyan Xinilie
 20510	Yelü Xingge
 20511	municipality of spain cartagena
@@ -20530,7 +20530,7 @@
 20528	male given name andre
 20529	male given name benedict
 20530	Bernie
-20531	espy, Best Female Tennis Player ESPY Award
+20531	espy award unknown 
 20532	Burt
 20533	Carly
 20534	female given name caroline
@@ -20679,7 +20679,7 @@
 20677	association football club 1. sc znojmo
 20678	association football club a.c. perugia calcio
 20679	human leonard nimoy
-20680	legislative term, 10th Saeima
+20680	legislative term unknown 
 20681	basketball team charlotte hornets
 20682	8th Saeima
 20683	human pope sixtus iv
@@ -20719,7 +20719,7 @@
 20717	human grand duke nicholas nikolaevich of russia
 20718	association football club melbourne knights fc
 20719	Composers Union of Armenia
-20720	association, Artist Union of Armenia
+20720	association unknown 
 20721	human charles k. kao
 20722	sports discipline 10,000 metres
 20723	profession philosopher of science
@@ -20792,7 +20792,7 @@
 20790	human louis iv, grand duke of hesse
 20791	human princess victoria melita of saxe-coburg and gotha
 20792	Maria Theresa of Naples and Sicily
-20793	Feliks Tyszkiewicz
+20793	human unknown 
 20794	human elisabeth of austria, queen of france
 20795	human george best
 20796	cemetery inglewood park cemetery
@@ -20842,7 +20842,7 @@
 20840	Emmanuel Théodose de La Tour d'Auvergne
 20841	human manfred, king of sicily
 20842	patronymic surname fernández
-20843	laureus world sports awards, Laureus World Sports Award for Sportswoman of the Year
+20843	laureus world sports awards unknown 
 20844	Tanizaki Prize
 20845	u.s. state oklahoma
 20846	military awards and decorations order of bravery
@@ -20953,32 +20953,32 @@
 20951	human louise of hesse-kassel
 20952	Yelü Yanmujin
 20953	Yelü Shuogu
-20954	Princess Dongping
+20954	No label defined
 20955	Princess Lin'angong
-20956	Princess Lincheng
-20957	Lin Hai Hui
-20958	Princess Yi'an
-20959	Princess Yiyang
+20956	No label defined
+20957	human unknown 
+20958	No label defined
+20959	No label defined
 20960	Princess Xinyi
-20961	Liu Xiuming
+20961	No label defined
 20962	Liu Chupei
-20963	Liu Bosi
-20964	Liu Boyuan
-20965	Liu Ying'e
+20963	No label defined
+20964	No label defined
+20965	human unknown 
 20966	Liu Yingyuan
 20967	princesse Huayang
 20968	Princess Nankang
 20969	Princess Nansha
 20970	Nanjin Xian
 20971	Princess Nanyang
-20972	Princess Boling
+20972	No label defined
 20973	Princess Wu
 20974	Wu Junxuan
 20975	Shi An Lai
 20976	Princess Shiping
 20977	Princess Anle (Northern Wei)
-20978	Princess Anji
-20979	Princess Angu
+20978	No label defined
+20979	No label defined
 20980	Princess Anyang
 20981	Wanyan Wulu
 20982	Xuan Chengde
@@ -20988,27 +20988,27 @@
 20986	Li Shi(Daughter of Li Yu)
 20987	Princess Chongning
 20988	Princess Chongde
-20989	Princess Pingyuan
-20990	Lijiang
+20989	No label defined
+20990	human unknown 
 20991	Guang De
 20992	Princess Guangde
-20993	Madam Hongzheng
+20993	No label defined
 20994	Xin'an
 20995	Xin'anmu princess
-20996	Princess Xindu
+20996	No label defined
 20997	Princess Dong'an
 20998	Princess Wukang
-20999	Princess Wucheng
+20999	No label defined
 21000	Princess Yongjia
-21001	Princess Yongfu
+21001	No label defined
 21002	Princess Yongchang
-21003	Princess Fuyang
+21003	No label defined
 21004	Princess Haiyan
 21005	human haiyan
 21006	Princess Shushou
 21007	Princess Huainan
 21008	princesse Huaiyang
-21009	Huaiyang
+21009	human unknown 
 21010	Princess Qinghe
 21011	Princess Liyang
 21012	princess Xingyang
@@ -21019,27 +21019,27 @@
 21017	Princesse Tanguo
 21018	princesse Jinan
 21019	Princess Puyang
-21020	Princess Lingxian
+21020	No label defined
 21021	princess Lingshou
 21022	Xishu Diji
-21023	Princess Yuqing
-21024	Princess Yuxv
+21023	No label defined
+21024	No label defined
 21025	Langye Chen Chang
 21026	Zhao Shi
 21027	Princess Yichang
 21028	Princess Zhenning
-21029	Princess Zhending
+21029	No label defined
 21030	human zhending
 21031	Princess Zhending
 21032	Li Shi
-21033	princess Zhangning
+21033	No label defined
 21034	princess Fanchang
 21035	Zhao Shi
 21036	Princess Yichuan
-21037	Princess Yigui
-21038	Princess Yixing
+21037	No label defined
+21038	No label defined
 21039	Princess Yixingxian
-21040	Princess Linru
+21040	No label defined
 21041	human linhai
 21042	Princess Linhai
 21043	Princess Fujin
@@ -21058,8 +21058,8 @@
 21056	princess Xiangcheng
 21057	Li Shi
 21058	human xiangyang
-21059	Princess Xiping
-21060	Princess Xihe
+21059	No label defined
+21060	No label defined
 21061	princesse Xihe
 21062	Li Shi
 21063	Xianfu Diji
@@ -21077,11 +21077,11 @@
 21075	Princess Poyang
 21076	Princess Jinxian
 21077	Princess Jinhua
-21078	Princess Changchung
+21078	human unknown 
 21079	Princess Changcheng
 21080	Changsha
 21081	Princess Changtai
-21082	Princess Changle
+21082	No label defined
 21083	Li Shi
 21084	Li Shi
 21085	princess Yangping
@@ -21091,9 +21091,9 @@
 21089	human princess lingqiu
 21090	Zhao Shi
 21091	Princess Shunde
-21092	Princess Shunyang
+21092	No label defined
 21093	princesse Shunyang
-21094	Princess Yinchuan
+21094	No label defined
 21095	Princess Yuyao
 21096	human guantao
 21097	human princess xiangshan
@@ -21235,7 +21235,7 @@
 21233	Itumbiara Esporte Clube
 21234	K. Sint-Niklase S.K.E.
 21235	male given name gilbert
-21236	occupation, racial theorist
+21236	occupation unknown 
 21237	human pope eugene iv
 21238	human mikhail kalashnikov
 21239	commune of france auxerre
@@ -21324,7 +21324,7 @@
 21322	Jean-Luc
 21323	human jean-marie lustiger
 21324	public research university university of utah
-21325	football team, The Football League XI
+21325	football team unknown 
 21326	human archduchess marie caroline of austria
 21327	human charlotte of the palatinate
 21328	human roger milla
@@ -21440,27 +21440,27 @@
 21438	human jessica simpson
 21439	Joachim-Jungius Society of Sciences
 21440	human john c. frémont
-21441	Liu Zhong
+21441	No label defined
 21442	Li Xiang
 21443	human zdeněk nejedlý
-21444	Qian Yuanji
-21445	Wang Zongping
+21444	human unknown 
+21445	human unknown 
 21446	Yelü Zongyuan
 21447	Joachim Schimpke
-21448	Yao Yin
+21448	No label defined
 21449	Joachim Tesche
 21450	human zdeněk svěrák
 21451	Xiao Yuyao
 21452	human joan a. steitz
-21453	Ma Xizhen
-21454	Ma Xiwang
-21455	Ma Xilang
-21456	Ma Xigao
-21457	Ma Xirui
-21458	Ma Xizhan
-21459	Ma Xizhi
-21460	Ma Xineng
-21461	Ma Xiguan
+21453	No label defined
+21454	No label defined
+21455	No label defined
+21456	No label defined
+21457	No label defined
+21458	No label defined
+21459	No label defined
+21460	No label defined
+21461	No label defined
 21462	Ma Xiyin
 21463	male given name enrico
 21464	male given name henricus
@@ -21551,7 +21551,7 @@
 21549	human akseli gallen-kallela
 21550	historical country dutch republic
 21551	literary award locus award for best short story
-21552	Liu Yi
+21552	No label defined
 21553	Wanyan Yansun
 21554	association football club stuttgarter kickers
 21555	association football club fc rot-weiß erfurt
@@ -21578,8 +21578,8 @@
 21576	human vincenzo bellini
 21577	private not-for-profit educational institution manhattan school of music
 21578	Czechs
-21579	Yao Yu
-21580	Yao Huangmei
+21579	No label defined
+21580	No label defined
 21581	human chris marker
 21582	war tirah campaign
 21583	human léon bonnat
@@ -21602,7 +21602,7 @@
 21600	basketball team indiana pacers
 21601	human constance
 21602	human svante pääbo
-21603	Gao zheng
+21603	No label defined
 21604	human rené of anjou
 21605	human tadeusz bór-komorowski
 21606	human maxime weygand
@@ -21662,7 +21662,7 @@
 21660	profession medalist
 21661	ethnic group irish people
 21662	human sergei korolev
-21663	Liu Yiji
+21663	human unknown 
 21664	male given name josiah
 21665	human pope clement vi
 21666	José Antonio Crespo
@@ -21722,7 +21722,7 @@
 21720	human viggo mortensen
 21721	Alice Neville
 21722	human oda nobunaga
-21723	judge of the Constitutional Court of Italy
+21723	position unknown 
 21724	human george i of greece
 21725	human henry morton stanley
 21726	Schnitzler
@@ -21805,12 +21805,12 @@
 21803	human marcus junius brutus
 21804	human ilya mechnikov
 21805	national association football team catalonia national football team
-21806	class of award, Tony Award for Best Actor in a Musical
+21806	class of award unknown 
 21807	grade of an order commander of the legion of merit
 21808	grade of an order officer of the legion of merit
 21809	grade of an order legionnaire of legion of merit
 21810	human kliment timiryazev
-21811	ovarian cancer, female reproductive organ cancer that is located in the ovary
+21811	unknown ovarian cancer
 21812	Pyrrhus
 21813	human pope sylvester ii
 21814	district capital saarbrücken
@@ -21843,7 +21843,7 @@
 21841	position member of the state duma
 21842	navy royal navy
 21843	position member of the national assembly of armenia
-21844	memorial, Labor Hall of Honor
+21844	memorial unknown 
 21845	human emmanuelle charpentier
 21846	human wolfgang pohle
 21847	association football club gnk dinamo zagreb
@@ -21869,7 +21869,7 @@
 21867	hanseatic city erfurt
 21868	position praetor
 21869	human ilya repin
-21870	expert witness, T4-Gutachter
+21870	expert witness unknown 
 21871	human karen bridge
 21872	Karen Chapman
 21873	human karen demirchyan
@@ -21925,7 +21925,7 @@
 21923	former administrative territorial entity county dublin
 21924	literary award prix mondial cino del duca
 21925	position newspaper editor
-21926	occupation, Gaelic football player
+21926	occupation unknown 
 21927	Team 2006
 21928	Hama
 21929	member of the Louisiana House of Representatives
@@ -21935,7 +21935,7 @@
 21933	human jessica lange
 21934	Arad
 21935	profession ice dancer
-21936	eldest daughter of Qianlong
+21936	human unknown 
 21937	human monica seles
 21938	human maria antonia of austria
 21939	Kathrin Piotrowski
@@ -21957,7 +21957,7 @@
 21955	higher education institution university of keele
 21956	version, edition, or translation brockhaus enzyklopädie (19 ed.)
 21957	version, edition, or translation great soviet encyclopedia (1969–1978)
-21958	art deco, influential visual arts design style which first appeared in France during the 1920s
+21958	unknown art deco
 21959	soldier corporal
 21960	Keith R. Porter Lecture
 21961	census-designated place stanford
@@ -22211,7 +22211,7 @@
 22209	open-access publisher university of parma
 22210	Member of the Landtag of Bavaria
 22211	female given name milena
-22212	public office, member of the National Assembly of Hungary
+22212	public office unknown 
 22213	theatrical occupation theatrical producer
 22214	position member of the parliament of finland
 22215	Party for Democracy
@@ -22435,7 +22435,7 @@
 22433	political party social democratic party of austria
 22434	surname kuhn
 22435	human john ruskin
-22436	military academy, Military Institute of Engineering Forces of the Armed Forces Academy
+22436	military academy unknown 
 22437	human josé paranhos, baron of rio branco
 22438	human sonny bono
 22439	human maurice roche, 4th baron fermoy
@@ -22512,7 +22512,7 @@
 22510	Dardanel Spor A.Ş.
 22511	political party baath party
 22512	human gabriella gonzaga
-22513	class of award, Tony Award for Best Play
+22513	class of award unknown 
 22514	city of portugal évora
 22515	male given name abraham
 22516	profession actuary
@@ -22728,7 +22728,7 @@
 22726	human nikolay lebedev
 22727	city manchester
 22728	human william kissam vanderbilt i
-22729	prostate cancer, male reproductive organ cancer
+22729	unknown prostate cancer
 22730	human alexandre da silva
 22731	Legia Warsaw
 22732	human charles albert of sardinia
@@ -23000,7 +23000,7 @@
 22998	male given name bill
 22999	border town tourcoing
 23000	chancellor president of the university of zurich
-23001	rector of the University of Basel
+23001	position unknown 
 23002	human lilit poghosyan
 23003	human johan rudolph thorbecke
 23004	male given name cosimo
@@ -23391,7 +23391,7 @@
 23389	legal profession jurist
 23390	literary genre chronicle
 23391	grade of an order commander of the order of ouissam alaouite
-23392	member of the Tennessee House of Representatives
+23392	position unknown 
 23393	Arnold J. Toynbee
 23394	city ho chi minh city
 23395	public educational institution of the united states university of idaho
@@ -23440,18 +23440,18 @@
 23438	1975 Iditarod
 23439	1976 Iditarod
 23440	1977 Iditarod
-23441	iditarod trail sled dog race 1978 Iditarod
-23442	iditarod trail sled dog race 1979 Iditarod
+23441	iditarod trail sled dog race unknown 
+23442	iditarod trail sled dog race unknown 
 23443	1980 Iditarod
 23444	1981 Iditarod
 23445	1982 Iditarod
 23446	1983 Iditarod
 23447	1984 Iditarod
 23448	1985 Iditarod
-23449	iditarod trail sled dog race 1986 Iditarod
+23449	iditarod trail sled dog race unknown 
 23450	1987 Iditarod
 23451	1988 Iditarod
-23452	iditarod trail sled dog race 1989 Iditarod
+23452	iditarod trail sled dog race unknown 
 23453	1990 Iditarod
 23454	1991 Iditarod
 23455	1992 Iditarod
@@ -23463,15 +23463,15 @@
 23461	1998 Iditarod
 23462	1999 Iditarod
 23463	2000 Iditarod
-23464	iditarod trail sled dog race 2001 Iditarod
+23464	iditarod trail sled dog race unknown 
 23465	2002 Iditarod
 23466	2003 Iditarod
 23467	2004 Iditarod
 23468	2009 Iditarod
-23469	iditarod trail sled dog race 2011 Iditarod
+23469	iditarod trail sled dog race unknown 
 23470	2012 Iditarod
-23471	iditarod trail sled dog race 2013 Iditarod
-23472	iditarod trail sled dog race 2014 Iditarod
+23471	iditarod trail sled dog race unknown 
+23472	iditarod trail sled dog race unknown 
 23473	female given name phyllis
 23474	female given name pernille
 23475	position member of the senate of the philippines
@@ -23562,7 +23562,7 @@
 23560	Urbain
 23561	The Dutch and Flemish authors
 23562	male given name wouter
-23563	Prešeren Award
+23563	award unknown 
 23564	public educational institution of the united states montana state university
 23565	Dharamshala
 23566	human kliment voroshilov
@@ -23661,10 +23661,10 @@
 23659	Trondheim Municipality Culture Award
 23660	human gilbert du motier, marquis de lafayette
 23661	Rudolf Bockelmann
-23662	Qian Chuanpu
-23663	Qian Yuanjin
+23662	No label defined
+23663	No label defined
 23664	Qian Yuanyou
-23665	Qian Yuanyuan
+23665	human unknown 
 23666	Chen Shuwu
 23667	human oleh blokhin
 23668	male given name lluís
@@ -23712,7 +23712,7 @@
 23710	city with millions of inhabitants luoyang
 23711	human victor de broglie
 23712	member of the Maine House of Representatives
-23713	elective office, Member of the Parliament of Catalonia
+23713	elective office unknown 
 23714	human umberto ii of italy
 23715	municipal arrondissements of france 14th arrondissement of paris
 23716	profession synchronized swimmer
@@ -23876,7 +23876,7 @@
 23874	historical country kingdom of sicily
 23875	human maja pohar
 23876	association football club atalanta b.c.
-23877	pulmonary emphysema, human disease
+23877	unknown pulmonary emphysema
 23878	human françois viète
 23879	board of directors
 23880	Prien am Chiemsee
@@ -23905,7 +23905,7 @@
 23903	position senator of chile
 23904	Fortaleza E.C.
 23905	mausoleum panthéon
-23906	colorectal cancer, cancer of the colon or rectum
+23906	unknown colorectal cancer
 23907	Dax
 23908	position member of house of representatives of the netherlands
 23909	private for-profit educational institution university of phoenix
@@ -24018,7 +24018,7 @@
 24016	sports season uefa euro 2016
 24017	human ion iliescu
 24018	human archduchess maria elisabeth of austria
-24019	stomach cancer, gastrointestinal system cancer that is located in the stomach
+24019	unknown stomach cancer
 24020	city of the united states missoula
 24021	position brazilian senator
 24022	Chlodomer
@@ -24147,7 +24147,7 @@
 24145	Massry Prize
 24146	Ronnie O'Sullivan
 24147	political party republican people's party
-24148	heart disease, cardiovascular system disease that involves the heart
+24148	unknown heart disease
 24149	human viktor chernomyrdin
 24150	Abū Ḥanīfa
 24151	association football club club brugge k.v.
@@ -24260,7 +24260,7 @@
 24258	ice hockey team new jersey devils
 24259	ice hockey team philadelphia flyers
 24260	independent school eton college
-24261	skin cancer, tumor or cancer of the skin
+24261	unknown skin cancer
 24262	human peter higgs
 24263	human jon lord
 24264	national association football team trinidad and tobago national football team
@@ -24614,7 +24614,7 @@
 24612	association football club bury f.c.
 24613	association football club carlisle united f.c.
 24614	Médaille de l'Aéronautique
-24615	science award, CNRS Gold medal
+24615	science award unknown 
 24616	human aleksei alelyukhin
 24617	Philadelphia Fury
 24618	association football club colchester united f.c.
@@ -24655,8 +24655,8 @@
 24653	academic degree candidate of sciences in pedagogy
 24654	academic degree phd in psychology
 24655	academic degree candidate of agricultural sciences
-24656	Candidate of Sociological sciences
-24657	candidate of chemical science
+24656	academic degree unknown 
+24657	academic degree unknown 
 24658	academic degree phd in law
 24659	human tsarevich alexei alexeyevich of russia
 24660	association football club vancouver whitecaps fc
@@ -24831,7 +24831,7 @@
 24829	human david a. kennedy
 24830	male given name tadeusz
 24831	higher education institution directly under ministry of education of the people’s republic of china zhejiang university
-24832	elected position, member of the South Carolina House of Representatives
+24832	elected position unknown 
 24833	Aleksey Greig
 24834	human alfonso enríquez
 24835	human sérgio manoel
@@ -25916,7 +25916,7 @@
 25914	human petra michalowsky
 25915	serbian city čačak
 25916	human karijotas
-25917	castellan of vilnius
+25917	unknown castellan of vilnius
 25918	surname named after given name petrov
 25919	university university of strasbourg
 25920	human robert i of france
@@ -25929,7 +25929,7 @@
 25927	human saif al-islam al-gaddafi
 25928	London Borough of Newham
 25929	Wigan
-25930	borderline personality disorder
+25930	unknown borderline personality disorder
 25931	highest honors of the ussr hero of socialist labour
 25932	human israel näslund
 25933	cultural heritage site in russia novodevichy cemetery
@@ -25963,7 +25963,7 @@
 25961	multi-sport club ferencvárosi tc
 25962	association football club sc bastia
 25963	association football club mtk budapest fc
-25964	lymphoma, hematologic cancer that affects lymphocytes
+25964	unknown lymphoma
 25965	2007 World Championships in Athletics
 25966	extractive metallurgy
 25967	FC Stal Alchevsk
@@ -25985,7 +25985,7 @@
 25983	constituent republics and provinces of yugoslavia socialist republic of bosnia and herzegovina
 25984	human césar cui
 25985	association football club molde fk
-25986	grand master, Grand Master of the Legion of Honour
+25986	grand master unknown 
 25987	male given name josé luis
 25988	profession audio book narrator
 25989	FK Rabotnički
@@ -26073,7 +26073,7 @@
 26071	civil parish with city status ely
 26072	human paul pau
 26073	academy of sciences israel academy of sciences and humanities
-26074	grade of an order, Knight in the Order of the Holy Sepulchre
+26074	grade of an order unknown 
 26075	grade of an order knight grand cross in the order of the holy sepulchre
 26076	Polish Academy of Learning
 26077	city with millions of inhabitants daegu
@@ -26171,7 +26171,7 @@
 26169	No label defined
 26170	No label defined
 26171	human ivan ii of moscow
-26172	video game developer, software development organization specializing in the creation of video games
+26172	unknown video game developer
 26173	association football club kf tirana
 26174	security agency mi5
 26175	Tönning
@@ -26213,7 +26213,7 @@
 26211	human ernestus andreas bach
 26212	human christian gottlieb bach
 26213	InBev-Baillet Latour Health Prize
-26214	cerebral palsy, group of permanent movement disorders that appear in early childhood
+26214	unknown cerebral palsy
 26215	political party polish socialist party
 26216	Haruki
 26217	female given name yolanda
@@ -26485,9 +26485,9 @@
 26483	human jane birkin
 26484	human denis i of portugal
 26485	human carol ii of romania
-26486	Member of the House of Representatives of Burma
+26486	position unknown 
 26487	position member of the parliament of georgia
-26488	Member of the Parliament of Ghana
+26488	position unknown 
 26489	association football club maccabi haifa f.c.
 26490	grade of an order order of kutuzov, 1st class
 26491	Order of Kutuzov, 2nd class
@@ -26497,8 +26497,8 @@
 26495	grade of an order order of suvorov, 3rd class
 26496	Agnes von Württemberg
 26497	occupation partisan
-26498	Member of the Parliament of Singapore
-26499	pancreatic cancer, endocrine gland cancer located in the pancreas
+26498	position unknown 
+26499	unknown pancreatic cancer
 26500	Vidal
 26501	Claud
 26502	male given name piers
@@ -26574,7 +26574,7 @@
 26572	human prince frederick, duke of york and albany
 26573	infante
 26574	human charles ii, grand duke of mecklenburg-strelitz
-26575	beatboxing, vocal percussion involving imitation of drum machines
+26575	unknown beatboxing
 26576	position member of the state senate of arizona
 26577	human louis ix, landgrave of hesse-darmstadt
 26578	human franz waxman
@@ -26973,7 +26973,7 @@
 26971	european athletics championships 2012 european athletics championships
 26972	historical region cappadocia
 26973	human joss stone
-26974	record label, Motéma Music
+26974	record label unknown 
 26975	tour de france 2010 tour de france
 26976	production team the new yorker
 26977	political party venstre
@@ -27046,7 +27046,7 @@
 27044	member of the National Assembly
 27045	mononymous person colette
 27046	city of switzerland zollikon
-27047	Golden Laurel of the Polish Academy of Literature
+27047	No label defined
 27048	human joshua lederberg
 27049	campaign medal colonial medal
 27050	think tank trilateral commission
@@ -27127,7 +27127,7 @@
 27125	Arona
 27126	human zoran milinković
 27127	male given name frank
-27128	pulmonary embolism
+27128	unknown pulmonary embolism
 27129	grade of an order grand cross of the order of the southern cross
 27130	grade of an order grand cross of the order of the dannebrog
 27131	craft stained-glass artist
@@ -27165,7 +27165,7 @@
 27163	human josepha schicklgruber
 27164	human catherine vasa of sweden
 27165	human isocrates
-27166	award for best costume design, Academy Award for Best Costume Design, Color
+27166	award for best costume design unknown 
 27167	Johann Schicklgruber
 27168	human theresia pfeisinger
 27169	human jacob evert de vos van steenwijk
@@ -27235,7 +27235,7 @@
 27233	human santo loquasto
 27234	Sara Sankey
 27235	human frederick stanley, 16th earl of derby
-27236	award for best production design, Academy Award for Best Art Direction, Color
+27236	award for best production design unknown 
 27237	Hōjō Tokifusa
 27238	Catharine of Nassau-Dillenburg
 27239	army british army
@@ -27419,7 +27419,7 @@
 27417	human maurice genevoix
 27418	independent school sevenoaks school
 27419	male given name severino
-27420	award for best original music, Academy Award for Best Original Dramatic or Comedy Score
+27420	award for best original music unknown 
 27421	PFC Nyva Vinnytsia
 27422	male given name seymour
 27423	human claudio sánchez-albornoz y menduiña
@@ -27527,7 +27527,7 @@
 27525	human allison janney
 27526	Landstuhl
 27527	human věra čáslavská
-27528	film award category, Independent Spirit Award for Best Director
+27528	film award category unknown 
 27529	human anneli jäätteenmäki
 27530	Frank prince
 27531	association football club brujas f.c.
@@ -28144,7 +28144,7 @@
 28142	civil decoration medal "for labour valour"
 28143	human elizabeth bishop
 28144	Hajer Club
-28145	Roman Catholic Bishop of Liege, since 720 catholic position, ordinary of the roman catholic diocese of Liège
+28145	position unknown 
 28146	Margaret of Geneva
 28147	human henry taube
 28148	country montenegro
@@ -28277,7 +28277,7 @@
 28275	Isabella of Scotland, Duchess of Brittany
 28276	human eleanor of toledo
 28277	human princess maria anna of saxony
-28278	Member of the Athens Academy
+28278	position unknown 
 28279	Le Roy
 28280	human landgravine amalie of hesse-darmstadt
 28281	grade of an order grand cross of the order of the white rose of finland
@@ -28380,7 +28380,7 @@
 28378	national under-18 association football team turkey national under-18 football team
 28379	human pyotr bagration
 28380	human luciano de souza
-28381	Judge of the United States Court of Appeals for the D.C. Circuit
+28381	position unknown 
 28382	Judge of the United States Court of Appeals for the First Circuit
 28383	human margaret drabble
 28384	Alpais
@@ -28408,7 +28408,7 @@
 28406	national association football team benin national football team
 28407	Elisabeth of Greater Poland, Duchess of Bohemia
 28408	Tatyana Litvinenko
-28409	President of the Jury at the Cannes Festival
+28409	position unknown 
 28410	Lenkom Theatre
 28411	association football club aarhus fremad
 28412	former administrative territorial entity kingdom of galicia and lodomeria
@@ -28546,8 +28546,8 @@
 28544	human cristiane rozeira
 28545	restaurateur
 28546	Tony Award for Best Scenic Design in a Play
-28547	class of award, Tony Award for Best Scenic Design in a Musical
-28548	class of award, Tony Award for Best Costume Design in a Play
+28547	class of award unknown 
+28548	class of award unknown 
 28549	printseller
 28550	human art babbitt
 28551	France national beach soccer team
@@ -28842,7 +28842,7 @@
 28840	human grand duke sergei alexandrovich of russia
 28841	association football club shanghai shenxin f.c.
 28842	private not-for-profit educational institution berklee college of music
-28843	institute of the russian academy of sciences, Keldysh Institute of Applied Mathematics
+28843	institute of the russian academy of sciences unknown 
 28844	Baofu Diji
 28845	Henry, Count of Lodi
 28846	profession choreographer
@@ -29004,7 +29004,7 @@
 29002	badminton event badminton at the 2016 summer olympics – men's doubles
 29003	badminton event badminton at the 2016 summer olympics – mixed doubles
 29004	Racibórz
-29005	class of award, Screen Actors Guild Award for Outstanding Performance by an Ensemble in a Drama Series
+29005	class of award unknown 
 29006	human robert f. kennedy
 29007	urban municipality of germany traunstein
 29008	human charles-ange laisant
@@ -29053,7 +29053,7 @@
 29051	human joachim gauck
 29052	human claudia de' medici
 29053	human eleanor of alburquerque
-29054	asian athletics championships, 2017 Asian Athletics Championships
+29054	asian athletics championships unknown 
 29055	navy royal canadian navy
 29056	human kyoko fukada
 29057	machine learning
@@ -29345,7 +29345,7 @@
 29343	Xiao Zhangmao
 29344	human henri cihoski
 29345	Prince Alexander of Georgia
-29346	voivodeship of vitebsk
+29346	unknown voivodeship of vitebsk
 29347	human princess antoinette of brunswick-wolfenbüttel
 29348	human hermann hesse
 29349	human teodor oizerman
@@ -29408,7 +29408,7 @@
 29406	human şehzade bayezid
 29407	human erich honecker
 29408	science award roebling medal
-29409	voivode of trakai
+29409	unknown voivode of trakai
 29410	association football club fc dnipro cherkasy
 29411	military rank general
 29412	human prince leopold, count of syracuse
@@ -29490,7 +29490,7 @@
 29488	surname oda
 29489	association football club fc oryol
 29490	Agnes of Poitou
-29491	former electoral district in Greece
+29491	No label defined
 29492	Agnes of Brandenburg
 29493	human ulrik christian gyldenløve
 29494	human teodor narbutt
@@ -29793,7 +29793,7 @@
 29791	filmmaking occupation animator
 29792	human wayne rooney
 29793	human paul von hindenburg
-29794	university building, Law School, University of São Paulo
+29794	university building unknown 
 29795	human margaret of england
 29796	Dermival Almeida Lima
 29797	association football club ferroviário atlético clube
@@ -30154,7 +30154,7 @@
 30152	human diane von fürstenberg
 30153	human ge fei
 30154	human gong zhichao
-30155	basketball team, WBC Spartak Moscow Region
+30155	basketball team unknown 
 30156	human peter tapsell
 30157	Centenary Prize
 30158	human penelope delta
@@ -30289,7 +30289,7 @@
 30287	FC Vorskla Poltava
 30288	position secretary of state for defence
 30289	association football club fc krylia sovetov samara
-30290	Member of the State Duma of the Russian Empire
+30290	position unknown 
 30291	human ricardo de la cierva
 30292	human iggy azalea
 30293	human natalya sats
@@ -30541,7 +30541,7 @@
 30539	hanseatic city halle (saale)
 30540	profession badminton coach
 30541	pipe organ
-30542	Honorary citizenship of Třebíč
+30542	award unknown 
 30543	profession landscape architect
 30544	weight class heavyweight
 30545	cross cross of merit
@@ -30578,7 +30578,7 @@
 30576	national academy académie des sciences, belles-lettres et arts de savoie
 30577	Académie de l'air et de l'espace
 30578	Académie de Marine
-30579	learned society, Académie des sciences, belles-lettres et arts de Besançon et de Franche-Comté
+30579	learned society unknown 
 30580	Académie des sciences, belles-lettres et arts de Rouen
 30581	academy of sciences academy of sciences of turin
 30582	national academy french academy of technologies
@@ -30683,7 +30683,7 @@
 30681	family vanderbilt family
 30682	House of Yang
 30683	House of Sima
-30684	royal family, House of Cao
+30684	royal family unknown 
 30685	royal family house of liu
 30686	human ralph fiennes
 30687	human francis, duke of guise
@@ -30697,7 +30697,7 @@
 30695	class of award pulitzer prize for biography or autobiography
 30696	historical country austria-hungary
 30697	women's association football club vfl wolfsburg
-30698	Anne of Armagnac
+30698	human unknown 
 30699	county seat springfield, illinois
 30700	science award rumford medal
 30701	human todor zhivkov
@@ -30881,7 +30881,7 @@
 30879	association football club a.c. monza
 30880	human alan clark
 30881	republics of the soviet union byelorussian soviet socialist republic
-30882	science award, Horatio Alger Award
+30882	science award unknown 
 30883	association football club ac oulu
 30884	Duchess Frederica of Württemberg
 30885	association football club a.c. pavia
@@ -31102,7 +31102,7 @@
 31100	cemetery calvary cemetery
 31101	rugby union team cambridge university rufc
 31102	Abbas ibn Ali
-31103	Taras Kavalyow
+31103	human unknown 
 31104	human timothy, vyacheslav arsenjevic
 31105	human abbas ibn abd al-muttalib
 31106	major regional center oldenburg
@@ -31113,8 +31113,8 @@
 31111	human al-waleed bin talal
 31112	military rank captain
 31113	Municipal elections 2017 in Espoo in Finland
-31114	municipal elections in finland, Municipal elections 2017 in Helsinki in Finland
-31115	municipal elections in finland, Municipal elections 2017 in Nurmijärvi in Finland
+31114	municipal elections in finland unknown 
+31115	municipal elections in finland unknown 
 31116	urban district of north rhine-westphalia leverkusen
 31117	football team a.c.r. messina
 31118	language icelandic
@@ -31132,7 +31132,7 @@
 31130	human warren christopher
 31131	human talal of jordan
 31132	Mido
-31133	centenarian, person who lives to or beyond the age of 100 years
+31133	unknown centenarian
 31134	grande école centre de formation des journalistes de paris
 31135	human mas oyama
 31136	château palace of versailles
@@ -31150,7 +31150,7 @@
 31148	human richard pryor
 31149	human jerry lewis
 31150	human william randolph hearst
-31151	leukemia, group of cancers that usually begin in the bone marrow
+31151	unknown leukemia
 31152	human fernando de la rúa
 31153	human guntram
 31154	human léon gambetta
@@ -31218,7 +31218,7 @@
 31216	Kavala F.C.
 31217	human charles d'houdetot
 31218	human gaston doumergue
-31219	human Charles of Rohan
+31219	human unknown 
 31220	human charles de vintimille
 31221	human félix faure
 31222	human jules grévy
@@ -31333,7 +31333,7 @@
 31331	tourist attraction notre-dame de paris
 31332	human mikalay ryndzyuk
 31333	human katarzyna sobieska
-31334	voivode of kiev
+31334	unknown voivode of kiev
 31335	human gaius caesar
 31336	human simone veil
 31337	human robert prosinečki
@@ -31363,7 +31363,7 @@
 31361	human saul kripke
 31362	online database comité des travaux historiques et scientifiques
 31363	Emperor Wen of Western Wei
-31364	learned society, Comité national de l'estampe
+31364	learned society unknown 
 31365	association football club esporte clube são bento
 31366	Commendation Medal
 31367	profession sports commentator
@@ -31429,7 +31429,7 @@
 31427	Regional Conservatory of Lille
 31428	conservatories with regional coverage conservatory of nice
 31429	former hospital conservatoire de toulouse
-31430	conservatories with regional coverage, Conservatoire à rayonnement régional de Versailles
+31430	conservatories with regional coverage unknown 
 31431	nomen antonius
 31432	nomen manlius
 31433	human konstantin skryabin
@@ -31490,11 +31490,11 @@
 31488	human anthony crosland
 31489	Sverdrup
 31490	surname bye
-31491	Padma Shri in science & engineering
+31491	award unknown 
 31492	class of award padma shri in arts
 31493	Padma Shri in literature and education
 31494	Padma Shri in social work
-31495	class of award, Padma Shri in sports
+31495	class of award unknown 
 31496	sport club kardemir karabükspor
 31497	human ivan fesin
 31498	human pieter van vollenhoven
@@ -31511,7 +31511,7 @@
 31509	TWAS fellow
 31510	position mayor
 31511	human davide dionigi
-31512	class of award, Padma Bhushan in science & engineering
+31512	class of award unknown 
 31513	deity jesus
 31514	political party nacionalista party
 31515	human pepin the hunchback
@@ -31682,9 +31682,9 @@
 31680	human oscar wilde
 31681	human josep fontana
 31682	human robert poujade
-31683	Liu Ziyu
-31684	Liu Shao
-31685	Liu Yizhen
+31683	No label defined
+31684	human unknown 
+31685	human unknown 
 31686	human jean-claude van damme
 31687	basketball position small forward
 31688	award lenin peace prize
@@ -31870,7 +31870,7 @@
 31868	human per olov enquist
 31869	Grand prix de littérature de la SGDL
 31870	Grand prix de poésie de la SGDL
-31871	literary award, Grand prix de littérature de l'Académie française
+31871	literary award unknown 
 31872	human louis philippe ii, duke of orléans
 31873	human crispus
 31874	literary award eino leino prize
@@ -32234,7 +32234,7 @@
 32232	human sergey aksakov
 32233	public university charles university
 32234	human andrey bogolyubsky
-32235	educational institution, Gorky Institute of World Literature
+32235	educational institution unknown 
 32236	institute institut industriel du nord
 32237	Seqenenre Tao
 32238	human nikolai pirogov
@@ -32388,7 +32388,7 @@
 32386	political party liberal party
 32387	vedette
 32388	human mário jardel
-32389	literary award, Premi d'Honor de les Lletres Catalanes
+32389	literary award unknown 
 32390	human cao xuan
 32391	human edgar morin
 32392	human galeazzo maria sforza
@@ -32589,7 +32589,7 @@
 32587	human alexander golitzen
 32588	human sheila michaels
 32589	human alan guth
-32590	doctor honoris causa, Honorary doctor of the Free University of Berlin
+32590	doctor honoris causa unknown 
 32591	human kip thorne
 32592	Peter Lax
 32593	human sergei sobolev
@@ -32617,7 +32617,7 @@
 32615	occupation revolutionary
 32616	human sibylle christine of anhalt-dessau
 32617	human victor, duke of münsterberg
-32618	kidney cancer, urinary system cancer that is located in the kidney
+32618	unknown kidney cancer
 32619	human amadeo i of spain
 32620	association football club fc torpedo moscow
 32621	occupation collector
@@ -33437,7 +33437,7 @@
 33435	human jack cunningham, baron cunningham of felling
 33436	human tito jackson
 33437	human richard lyon-dalberg-acton, 4th baron acton
-33438	hall of fame, Canadian Music Hall of Fame
+33438	hall of fame unknown 
 33439	male given name mario
 33440	national university kyoto university
 33441	football positions defender
@@ -33645,7 +33645,7 @@
 33643	literary award broquette-gonin prize
 33644	human achim poulheim
 33645	Prix Femina étranger
-33646	peace prize, Gandhi Peace Award
+33646	peace prize unknown 
 33647	Louis Guilloux Prize
 33648	ironic award lysenko prize
 33649	Léo-Pariseau Prize
@@ -34076,7 +34076,7 @@
 34074	human bengt r. holmström
 34075	female given name giuliana
 34076	city almaty
-34077	member of the 55th Parliament of the United Kingdom
+34077	position unknown 
 34078	language ancient greek
 34079	human chester a. arthur
 34080	oblast of russia tambov oblast
@@ -34126,7 +34126,7 @@
 34124	human erskine hamilton childers
 34125	Dick Spring
 34126	military school hellenic military academy
-34127	class of award, WNBA All-Rookie Team
+34127	class of award unknown 
 34128	human william howard taft
 34129	Jacques Lefèvre d'Étaples
 34130	human francisco, duke of cádiz
@@ -34439,7 +34439,7 @@
 34437	basketball team pallacanestro virtus roma
 34438	human derenik demirchian
 34439	No label defined
-34440	voivode of smolensk
+34440	unknown voivode of smolensk
 34441	association football club cercle brugge k.s.v.
 34442	cemetery eastern cemetery
 34443	Bury Town F.C.
@@ -34706,7 +34706,7 @@
 34704	writing
 34705	open-access publisher university of basel
 34706	human claude-emmanuel de pastoret
-34707	esophageal cancer, gastrointestinal system cancer that is located in the esophagus
+34707	unknown esophageal cancer
 34708	human claude victor-perrin, duc de belluno
 34709	human john paul i
 34710	Member of the 5th Northern Ireland Assembly
@@ -34869,7 +34869,7 @@
 34867	human william f. buckley, jr.
 34868	human marcelinho carioca
 34869	human edwin lutyens
-34870	human Konstantin Tsvetkov
+34870	human unknown 
 34871	building auckland grammar school
 34872	noble family house of lusignan
 34873	city of japan hagi
@@ -35213,7 +35213,7 @@
 35211	association football club fc torpedo kutaisi
 35212	battle battle of stalingrad
 35213	male given name olaf
-35214	assassination, murder of a prominent person, often a political leader or ruler
+35214	unknown assassination
 35215	comune of italy catanzaro
 35216	Hakoah Amidar Ramat Gan F.C.
 35217	human pavel plotnikov
@@ -35251,7 +35251,7 @@
 35249	human paul cominges
 35250	human pavel pavlovich poluboyarov
 35251	human nicolás olivera
-35252	human Pedricco de' Medici
+35252	human unknown 
 35253	association football club esbjerg fb
 35254	human augusta anastasia of lithuania
 35255	human ashok kumar
@@ -35289,7 +35289,7 @@
 35287	human zac goldsmith
 35288	lutheran cathedral lübeck cathedral
 35289	human harold alexander, 1st earl alexander of tunis
-35290	voivodes of nowogródek
+35290	unknown voivodes of nowogródek
 35291	FC Minsk-2
 35292	human nikolai borisevich
 35293	capital city port of spain
@@ -35300,12 +35300,12 @@
 35298	human vladimir mikhalkin
 35299	historical region bohemia
 35300	human matilda of flanders
-35301	castilian of trakai
+35301	unknown castilian of trakai
 35302	association football club millonarios fútbol club
 35303	América de Cali
 35304	human bob dylan
 35305	hanseatic city lüneburg
-35306	human Predslava Vladimirovna
+35306	human unknown 
 35307	schülerverbindung zofingia
 35308	Jerzy Chodkiewicz
 35309	human alexander dvorkin
@@ -35473,7 +35473,7 @@
 35471	viol
 35472	comune of italy chiavenna
 35473	female given name violante
-35474	nephritis, inflammation of the kidneys
+35474	unknown nephritis
 35475	human ahmed muhtar pasha
 35476	association football club s.s.d. casarano calcio
 35477	Lives of the Most Eminent English Poets
@@ -35571,14 +35571,14 @@
 35569	discipline philology
 35570	human ray bradbury
 35571	university university of mumbai
-35572	human Nikolay Amel'ko
+35572	human unknown 
 35573	human cristina fernández de kirchner
 35574	human i. n.  anashkin
 35575	hanseatic city stralsund
 35576	human biblical character john the baptist
 35577	human anna jagiellon
 35578	Ara
-35579	honorary doctor of the University of St Andrews
+35579	award unknown 
 35580	Aram
 35581	human viktor ardov
 35582	cemetery arskoe cemetery
@@ -35676,7 +35676,7 @@
 35674	association football club sv werder bremen ii
 35675	human mariah carey
 35676	typesetter
-35677	syphilis, sexually transmitted infection
+35677	unknown syphilis
 35678	state or insular area capital in the united states raleigh
 35679	1st Verkhovna Rada
 35680	human gichin funakoshi
@@ -35743,13 +35743,13 @@
 35741	human henri becquerel
 35742	cemetery gate of heaven cemetery
 35743	university industrial academy
-35744	secondary national association football team, Northern Ireland B national football team
-35745	secondary national association football team, Scotland B national football team
+35744	secondary national association football team unknown 
+35745	secondary national association football team unknown 
 35746	human louis aragon
 35747	human john dalton
 35748	human aleksey vysotsky
 35749	Graduate School of Journalism and Mass Communication
-35750	military academy, F. E. Dzerzhinsky Naval Engineering Academy
+35750	military academy unknown 
 35751	academic institution top courses for scriptwriters and film directors
 35752	institute of the russian academy of sciences dorodnitsyn computing centre
 35753	discipline physics
@@ -35813,7 +35813,7 @@
 35811	Samara municipal cemetery
 35812	PBC Lukoil Academic
 35813	type of sport hockey
-35814	Vasilyev Brothers State Prize of the RSFSR
+35814	award unknown 
 35815	award state prize of the russian federation
 35816	science award state prize of ukraine in science and technology
 35817	research institute vavilov state optical institute
@@ -35858,7 +35858,7 @@
 35856	human michel de montaigne
 35857	human pyotr deynekin
 35858	human magnus julius de la gardie
-35859	epilepsy, human neurological disease causing seizures
+35859	unknown epilepsy
 35860	center of oblast mykolaiv
 35861	human pyotr dement'ev
 35862	urban municipality of germany langenhagen
@@ -35877,7 +35877,7 @@
 35875	human manuel i komnenos
 35876	human dyfnan
 35877	human leo vi the wise
-35878	Dingad of Llandingat, Welsh saint and church leader
+35878	human unknown 
 35879	municipality haifa
 35880	human ertharin cousin
 35881	John II Komnenos
@@ -35938,23 +35938,23 @@
 35936	big city reims
 35937	Honored Artist of the Armenian SSR
 35938	title of honor merit artist of ukrainian ssr
-35939	honorary title of russia, Merited Military Pilot of the Russian Federation
-35940	honorary title of the rsfsr, Merited Physician of the RSFSR
+35939	honorary title of russia unknown 
+35940	honorary title of the rsfsr unknown 
 35941	award honored art worker of ukraine
 35942	Honored Cultural Worker of the Republic of Armenia
-35943	honorary title of russia, Honored art worker of the Russian Federation
+35943	honorary title of russia unknown 
 35944	honorary title of the rsfsr merited engineering scientist of the rsfsr
-35945	honorary title of the rsfsr, Honored Scientist of the RSFSR
+35945	honorary title of the rsfsr unknown 
 35946	honorary title of russia merited scientist of the russian federation
 35947	title of honor honored scientist of ukraine
 35948	honorary title of russia honoured higher education employee of the russian federation
 35949	award merited cultural worker of the rsfsr
 35950	award unknown 
-35951	honorary title of russia, Honored Physical Culture Worker of the Russian Federation
-35952	honorary title of the rsfsr, Merited civil engineer of RSFSR
+35951	honorary title of russia unknown 
+35952	honorary title of the rsfsr unknown 
 35953	award honored artist of the rsfsr
-35954	economics award, Honored Economist of Ukraine
-35955	honorary title of russia, Honoured Lawyer of Russia
+35954	economics award unknown 
+35955	honorary title of russia unknown 
 35956	award honored lawyer of ukraine
 35957	FC Zvezda Serpukhov
 35958	human john campbell, 7th duke of argyll
@@ -35995,7 +35995,7 @@
 35993	institute of the russian academy of sciences institute of geography of the russian academy of sciences
 35994	educational institution repin institute of arts
 35995	institute of the russian academy of sciences institute of russian history
-35996	Institute of Slavic Studies of the Russian Academy of Sciences
+35996	institute unknown 
 35997	institute of the russian academy of sciences institute of sociology
 35998	national under-16 association football team england national under-16 association football team
 35999	institute institute of anthropology and ethnography
@@ -36032,7 +36032,7 @@
 36030	human jerry orbach
 36031	open-access publisher national university of distance education
 36032	human aleksey nikolayevich katrich
-36033	human Mikhail von Kauffmann
+36033	human unknown 
 36034	occupation vice president
 36035	Whig Party
 36036	political party democratic-republican party
@@ -36065,7 +36065,7 @@
 36063	human mikhail markovich column
 36064	human sergey kolosov
 36065	comune of italy asola
-36066	honorary degree, honorary doctor of the Bar-Ilan University
+36066	honorary degree unknown 
 36067	human aleksandr komarovskiy
 36068	hereditary position king of cambodia
 36069	human bernhard riemann
@@ -36073,7 +36073,7 @@
 36071	human richard i of england
 36072	center of oblast kharkiv
 36073	human anatoly koni
-36074	honorary doctor of Tel Aviv University
+36074	award unknown 
 36075	association football club fc milsami
 36076	medal constantin medal
 36077	human pius xi
@@ -36106,7 +36106,7 @@
 36104	human anatole france
 36105	human viktor kudriavtsev
 36106	city sheffield
-36107	human Georgy Kuznetsov
+36107	human unknown 
 36108	human mikhail vasilyevich kuznetsov
 36109	male given name luigi
 36110	surname kuznetsov
@@ -36310,7 +36310,7 @@
 36308	university moscow architectural institute
 36309	university state academic institute of fine arts surikov
 36310	university moscow state university of printing arts
-36311	academic institution, Moscow Institute of Oriental Studies
+36311	academic institution unknown 
 36312	school institute for philosophie, literature and history in moscow
 36313	university moscow state institute of electronics and mathematics
 36314	university moscow institute for history and archives
@@ -36635,7 +36635,7 @@
 36633	human bonaventure
 36634	human hendrik c. van de hulst
 36635	Russian Federation Government Certificate of Honour
-36636	certificate of honour, Honorary Diploma of the Cabinet of Ministers of Ukraine
+36636	certificate of honour unknown 
 36637	award honored badge of merit of the president of ukraine
 36638	ministerial awards of the russian federation honoured worker of higher professional education of the russian federation
 36639	title of honor honorary officer of the state security
@@ -36733,7 +36733,7 @@
 36731	Elroy Hirsch
 36732	human go-murakami
 36733	human go-fushimi
-36734	public office, Prime Minister of Bulgaria
+36734	public office unknown 
 36735	human kōkō
 36736	human ana paula valadão
 36737	human go-uda
@@ -37322,7 +37322,7 @@
 37320	basketball team pbc cska moscow
 37321	human viswanathan anand
 37322	human roberto jiménez gago
-37323	human Anne Cathrine Christiansdatter
+37323	human unknown 
 37324	human sophia jagiellon, margravine of brandenburg-ansbach
 37325	human carolina marín
 37326	human nadieżda zięba
@@ -37425,7 +37425,7 @@
 37423	human albert sarraut
 37424	human confucius
 37425	human chris paul
-37426	iditarod trail sled dog race 2005 Iditarod
+37426	iditarod trail sled dog race unknown 
 37427	Cádiz Club de Fútbol
 37428	human kate burton
 37429	association football club panionios f.c.
@@ -37443,7 +37443,7 @@
 37441	Galanta
 37442	big city matsusaka
 37443	war franco-prussian war
-37444	iditarod trail sled dog race 2007 Iditarod
+37444	iditarod trail sled dog race unknown 
 37445	human felix mendelssohn
 37446	human máxima of the netherlands
 37447	human steven moffat
@@ -37452,7 +37452,7 @@
 37450	profession model
 37451	human aleksandr abdulov
 37452	human serge reggiani
-37453	iditarod trail sled dog race 2008 Iditarod
+37453	iditarod trail sled dog race unknown 
 37454	human anita tsoy
 37455	human prince faisal bin al hussein
 37456	human marlene dietrich
@@ -37686,7 +37686,7 @@
 37684	Academia Venezolana de la Lengua
 37685	human nicola sturgeon
 37686	commune of france arcueil
-37687	award for best original music, Academy Award for Best Original Musical Score
+37687	award for best original music unknown 
 37688	Sigmund Freud Prize
 37689	human edmond james de rothschild
 37690	human ovadia yosef
@@ -37708,7 +37708,7 @@
 37706	human oleg grigoryevich makarov
 37707	human mary harney
 37708	Ivan Aksakov
-37709	multiple myeloma, cancer of plasma cells
+37709	unknown multiple myeloma
 37710	occupational surname meyer
 37711	human reiner klimke
 37712	human seán lemass
@@ -37984,7 +37984,7 @@
 37982	Anne Lennard, Countess of Sussex
 37983	association football club fc lahti
 37984	Anne Woodville
-37985	kidney failure, disease where the kidneys fail to adequately filter waste products from the blood
+37985	unknown kidney failure
 37986	association football club fc saturn ramenskoye
 37987	Antanas
 37988	multi-sport event 1974 asian games
@@ -38123,7 +38123,7 @@
 38121	association football club américa futebol clube
 38122	human américo castro
 38123	philosophical school stoicism
-38124	non-governmental organisation, Australian Academy of Technology and Engineering
+38124	non-governmental organisation unknown 
 38125	association football club fc seoul
 38126	military unit branch-type class united states army special forces
 38127	association football club australian institute of sport football program
@@ -38379,7 +38379,7 @@
 38377	human william hamilton
 38378	military rank major
 38379	human jean charest
-38380	espy award, Best Female Athlete ESPY Award
+38380	espy award unknown 
 38381	human katrin göring-eckardt
 38382	espy award best male athlete espy award
 38383	film award national film award for best actress
@@ -38788,7 +38788,7 @@
 38786	Breakthrough Prize in Life Sciences
 38787	human stendhal
 38788	advocacy group naacp
-38789	hall of fame of a state or province, California Hall of Fame
+38789	hall of fame of a state or province unknown 
 38790	human andrei eshpai
 38791	human andrei yevgenyevich ivanov
 38792	National Academy of Design
@@ -38865,7 +38865,7 @@
 38863	human mal whitfield
 38864	civil parish berwick-upon-tweed
 38865	human alexander tikhonov
-38866	bladder cancer, urinary system cancer that results in malignant growth located in the urinary bladder
+38866	unknown bladder cancer
 38867	human francis george
 38868	human jean-marie villot
 38869	commune of france remiremont
@@ -39465,7 +39465,7 @@
 39463	open-access publisher chinese academy of sciences
 39464	private not-for-profit educational institution drake university
 39465	class of award drama desk award for outstanding actress in a musical
-39466	class of award, Drama Desk Award for Outstanding Musical
+39466	class of award unknown 
 39467	Drama Desk Award for Outstanding Play
 39468	Francis Egon of Fürstenberg
 39469	human claudio monteverdi
@@ -39754,7 +39754,7 @@
 39752	learned society society of antiquaries of london
 39753	Methuen
 39754	Evesham United F.C.
-39755	theatrical makeup, makeup used to assist in creating the appearance of the characters
+39755	unknown theatrical makeup
 39756	Weymouth
 39757	Exclusion Bill Parliament
 39758	human william j. donovan
@@ -39857,7 +39857,7 @@
 39855	wikiproject articles every wikipedia should have
 39856	Prince Joseph, Hereditary Duke of Parma
 39857	Paris-Sorbonne University - Paris IV
-39858	Florida Artists Hall of Fame
+39858	award unknown 
 39859	hall of fame florida women's hall of fame
 39860	oblast of russia sverdlovsk oblast
 39861	human helen dewitt
@@ -40365,7 +40365,7 @@
 40363	Asker
 40364	Theresian Military Academy
 40365	human john viii, count of nassau-siegen
-40366	award Premio Nacional de Periodismo Simón Bolívar
+40366	award unknown 
 40367	surname palmer
 40368	male given name mariano
 40369	human brian eno
@@ -41058,7 +41058,7 @@
 41056	human einar löfstedt den yngre
 41057	capital city lisbon
 41058	human yuzuru hanyu
-41059	technical field award IEEE Emanuel R. Piore Award
+41059	technical field award unknown 
 41060	sports season 1998 african cup of nations
 41061	human marco minghetti
 41062	municipality of finland nurmijärvi
@@ -41315,7 +41315,7 @@
 41313	national sports team united states national futsal team
 41314	cemetery monumental cemetery of milan
 41315	human alexander i of scotland
-41316	National Award to the Best Translation
+41316	No label defined
 41317	human kristina schröder
 41318	human stephen of england
 41319	science award bbva foundation frontiers of knowledge award
@@ -41352,7 +41352,7 @@
 41350	Ragnvald Rettilbein, King of Hadeland
 41351	human antti sumiala
 41352	human manvydas
-41353	military national association football team, France military national football team
+41353	military national association football team unknown 
 41354	association football club sportfreunde siegen
 41355	eastern orthodox patriarchate russian orthodox church
 41356	capital city washington, d.c.
@@ -41534,7 +41534,7 @@
 41532	courage award distinguished service order
 41533	human erika mann
 41534	public educational institution of the united states southeastern louisiana university
-41535	aortic aneurysm, aorta to greater than 1.5 times normal size
+41535	unknown aortic aneurysm
 41536	human juan ramón carrasco
 41537	human vicente garcía
 41538	human jorge oteiza
@@ -41570,7 +41570,7 @@
 41568	uci trade team i movistar
 41569	human friedrich hirzebruch
 41570	human jefferson feijão
-41571	award Jefferson Lecture
+41571	award unknown 
 41572	human jefferson louis
 41573	human lazarus fuchs
 41574	human pascual jordan
@@ -41702,7 +41702,7 @@
 41700	literary award newbery medal
 41701	human ernest i, duke of saxe-gotha
 41702	human hermann, prince of hohenlohe-langenburg
-41703	liver cancer, human disease
+41703	unknown liver cancer
 41704	human ludwig aschoff
 41705	comune of italy cremona
 41706	Gisela of Burgundy, Marchioness of Montferrat
@@ -41879,12 +41879,12 @@
 41877	cemetery sainte-geneviève-des-bois russian cemetery
 41878	auxiliary science of history numismatics
 41879	human paul walden
-41880	Juno Award for Album of the Year
+41880	juno award unknown 
 41881	Juno Award for Folk Artist of the Year
 41882	Juno Award for Instrumental Album of the Year
-41883	Juno Award for Single of the Year
-41884	Juno Award for Songwriter of the Year
-41885	Juno Award for Video of the Year
+41883	juno award unknown 
+41884	juno award unknown 
+41885	class of award unknown 
 41886	human h. h. kung
 41887	Adolf I, Prince of Schaumburg-Lippe
 41888	human karl rudolphi
@@ -42021,7 +42021,7 @@
 42019	association football club fcm bacău
 42020	music genre instrumental music
 42021	human enno iii, count of east frisia
-42022	Kentucky Women Remembered
+42022	award unknown 
 42023	male given name dennis
 42024	commune of france brive-la-gaillarde
 42025	Countess Palatine Hedwig Elisabeth of Neuburg
@@ -42226,7 +42226,7 @@
 42224	Itō
 42225	university building peterhouse
 42226	PEN New England Award
-42227	class of award, Laurence Olivier Award for Best Actress in a Musical
+42227	class of award unknown 
 42228	archaeological site chang'an
 42229	area of mathematics control theory
 42230	Chinese people
@@ -42446,7 +42446,7 @@
 42444	human friedrich wilhelm foerster
 42445	Newton Abbot
 42446	human georgios kountouriotis
-42447	human Kiyosu Ienori
+42447	human unknown 
 42448	Jitsunyo
 42449	occupation industrialist
 42450	human thomas beaufort, duke of exeter
@@ -42487,7 +42487,7 @@
 42485	crypt imperial crypt
 42486	human magnus ii, duke of mecklenburg
 42487	occupation public figure
-42488	holy orders, sacraments in some Christian churches
+42488	unknown holy orders
 42489	university in france panthéon-assas university
 42490	association football club ascoli calcio 1898 f.c.
 42491	award nansen refugee award
@@ -42697,7 +42697,7 @@
 42695	human josé sánchez guerra
 42696	Louis Anton of Pfalz-Neuburg
 42697	human pedro miguel echenique landiríbar
-42698	sports award, All-NBA Team
+42698	sports award unknown 
 42699	male given name kirill
 42700	position curator
 42701	Mamdoh bin Abdulaziz
@@ -43168,11 +43168,11 @@
 43166	association football club sk vorwärts steyr
 43167	Mochimasa Ikeda
 43168	human prince henry, duke of cumberland and strathearn
-43169	human Yoshinori Ikeda
+43169	human unknown 
 43170	Yu
 43171	human duke charles louis frederick of mecklenburg
-43172	human Kitsuregawa Tsunauji
-43173	human Tokugawa Sadako
+43172	human unknown 
+43173	human unknown 
 43174	Matsudaira Takeakira
 43175	Tsuchiya Shigenao
 43176	noble family house of württemberg
@@ -43180,7 +43180,7 @@
 43178	Freising
 43179	Rudolf I
 43180	Mine-hime
-43181	Tokugawa Yoshiatsu
+43181	human unknown 
 43182	human cao zhang
 43183	administrative territorial entity bern
 43184	Imperial Japanese Army Academy
@@ -43495,7 +43495,7 @@
 43493	Terengganu F.C. II
 43494	human arthur waley
 43495	PEN Award for Poetry in Translation
-43496	PEN Oakland/Josephine Miles Literary Award
+43496	award unknown 
 43497	Liu Zhang
 43498	Liu Fei
 43499	human bette davis
@@ -43782,7 +43782,7 @@
 43780	u.s. state maine
 43781	human friedrich trendelenburg
 43782	human rabindranath tagore
-43783	President of the Geological Society of London
+43783	position unknown 
 43784	comune of italy portici
 43785	science award bancroft prize
 43786	human édouard detaille
@@ -43867,12 +43867,12 @@
 43865	human jonathan carroll
 43866	Emperor Ming of Han
 43867	human lew sapieha
-43868	abai
+43868	human unknown 
 43869	human tanggūdai
 43870	association football club fc khimki
 43871	Manggūltai
 43872	human elia kazan
-43873	human Tabai
+43873	human unknown 
 43874	comune of italy torre del greco
 43875	Babutai
 43876	Degelei
@@ -43885,13 +43885,13 @@
 43883	Princess Nunje
 43884	Mangguji
 43885	human franz bücheler
-43886	Princess Mukushen
+43886	human unknown 
 43887	human sergei zhebelev
 43888	human mark oliphant
 43889	human alexander zhulin
 43890	Julius Frederick, Duke of Württemberg-Weiltingen
-43891	fifth daughter of Nurhaci
-43892	sixth daughter of Nurhaci
+43891	human unknown 
+43892	human unknown 
 43893	seventh daughter of Nurhaci
 43894	Songgutu
 43895	modern language standard chinese
@@ -43947,7 +43947,7 @@
 43945	type of sport badminton
 43946	human edmund white
 43947	human marie josé of belgium
-43948	private not-for-profit educational institution, Randolph–Macon College
+43948	private not-for-profit educational institution unknown 
 43949	Bernard VII, Count of Armagnac
 43950	human george of the palatinate
 43951	Bernhard III, Margrave of Baden-Baden
@@ -44094,7 +44094,7 @@
 44092	human peter käsbauer
 44093	association football club fc hoverla uzhhorod
 44094	Changsheng
-44095	voivode of vilnius
+44095	unknown voivode of vilnius
 44096	Emperor Hui of Jin
 44097	Wanpu
 44098	Yinzan
@@ -44252,7 +44252,7 @@
 44250	human iosif kheifits
 44251	army aviation component united states army air forces
 44252	human herbert walther
-44253	Sangeet Natak Akademi Award
+44253	award unknown 
 44254	human emperor wen of sui
 44255	human emperor yang of sui
 44256	city of the united states menlo park
@@ -44285,7 +44285,7 @@
 44283	association football club cd castellón
 44284	Gatchina
 44285	research university university of tsukuba
-44286	football team, Scottish Football League XI
+44286	football team unknown 
 44287	Leo II
 44288	Emperor Jingzong of Western Xia
 44289	human richard stallman
@@ -44354,13 +44354,13 @@
 44352	Buddhism
 44353	municipality of finland kirkkonummi
 44354	art school glasgow school of art
-44355	Liu Zixiao
+44355	No label defined
 44356	Liu Ziyun
-44357	Liu Zimeng
-44358	Liu Zisi
-44359	Liu Ziyu
+44357	No label defined
+44358	No label defined
+44359	No label defined
 44360	Liu Ziyuan
-44361	Liu Zizhen
+44361	No label defined
 44362	association football club strømsgodset toppfotball
 44363	Etsuko Toganoo
 44364	Emperor Shenzong of Song
@@ -44880,7 +44880,7 @@
 44878	1983 Badminton World Championships – women's doubles
 44879	human hongyan
 44880	city of the united states spartanburg
-44881	Heshuo Princess Huaike
+44881	human unknown 
 44882	St. Charles
 44883	human mastino ii della scala
 44884	human max van der stoel
@@ -44943,7 +44943,7 @@
 44941	Anglesia Visconti
 44942	human kunio hatoyama
 44943	William V, Marquess of Montferrat
-44944	Theodore Roosevelt Award
+44944	award unknown 
 44945	human theodoros manetas
 44946	human cao fang
 44947	human pyotr andreyevich shuvalov
@@ -45001,7 +45001,7 @@
 44999	human yongrong
 45000	Tony Award for Best Lighting Design
 45001	human tony battersby
-45002	human Yongcong
+45002	human unknown 
 45003	Yongxuan
 45004	ninth son of Qianlong
 45005	human tony sealy
@@ -45013,7 +45013,7 @@
 45011	Yongxing
 45012	People's Party
 45013	Yongji
-45014	human Yongjing, the Thirteenth Son of Emperor Qianlong
+45014	human unknown 
 45015	Bjarne
 45016	Galesburg
 45017	human torild skard
@@ -45074,7 +45074,7 @@
 45072	macrolanguage chinese
 45073	human alois hitler
 45074	human carl ferdinand cori
-45075	Liu Zan
+45075	No label defined
 45076	human walter kohn
 45077	human franz werfel
 45078	human karl von habsburg
@@ -45095,7 +45095,7 @@
 45093	human archduke charles stephen of austria
 45094	human archduke ferdinand karl joseph of austria-este
 45095	Archduke Maximilian of Austria-Este
-45096	secondary national association football team, Turkey A2 national football team
+45096	secondary national association football team unknown 
 45097	human archduke eugen of austria
 45098	subdivisions of russia yuzhno-sakhalinsk
 45099	island nation dominican republic
@@ -45163,13 +45163,13 @@
 45161	island nation haiti
 45162	human pieter zeeman
 45163	academic institution bangor university
-45164	human Yong Lu, 18th-century Chinese noble
+45164	human unknown 
 45165	male given name urs
 45166	sixteenth son of Qianlong
 45167	Yonglin
 45168	second daughter of Qianlong
 45169	Useless Parliament
-45170	Kurun Princess Hejing, manchu princess of the Qing dynasty (born 1731)
+45170	human unknown 
 45171	human walter scott
 45172	prefecture of morocco casablanca
 45173	human archduke karl albrecht of austria
@@ -45314,11 +45314,11 @@
 45312	human sergei eisenstein
 45313	fifth daughter of Qianlong
 45314	Willenhall Town F.C.
-45315	sixth daughter of Qianlong
+45315	human unknown 
 45316	William Adam
 45317	human william aitken
 45318	eighth daughter of Qianlong
-45319	Heshuo Princess Heke
+45319	human unknown 
 45320	human william fane de salis
 45321	city of iran tabriz
 45322	human akira kurosawa
@@ -45696,7 +45696,7 @@
 45694	Liu Chang
 45695	Bonsucesso Futebol Clube
 45696	university building merton college
-45697	human Cao Xian, daughter of warlord Cao Cao
+45697	human unknown 
 45698	Cao Hua
 45699	PHC Krylya Sovetov
 45700	Lingfu Diji
@@ -45797,7 +45797,7 @@
 45795	radio play price edgar awards
 45796	orders, decorations, and medals of the united kingdom knight bachelor
 45797	city with millions of inhabitants mosul
-45798	typhoid fever, This disorder is common in developing countries and can be treated with antibiotics.
+45798	unknown typhoid fever
 45799	trades union unión general de trabajadores
 45800	human giacomo casanova
 45801	human pamela anderson
@@ -46148,7 +46148,7 @@
 46146	Burgos CF
 46147	noble family anscarids
 46148	profession beekeeper
-46149	laryngeal cancer
+46149	unknown 
 46150	city of the united states longview
 46151	Hamilton
 46152	Marietta
@@ -46759,7 +46759,7 @@
 46757	human anatoli blagonravov
 46758	language vietnamese
 46759	human biblical character paul the apostle
-46760	individual or organization with membership in a group; constitutive components of a corporate body
+46760	unknown member
 46761	Wichita Wings
 46762	Isaiah
 46763	human magnus gabriel de la gardie
@@ -47036,7 +47036,7 @@
 47034	Charles Lennox, 1st Duke of Richmond
 47035	58th Academy Awards
 47036	human władysław tyszkiewicz
-47037	human Włodzimierz Potocki
+47037	human unknown 
 47038	Konrad III Rudy
 47039	medical profession neurosurgeon
 47040	pontifical academy pontifical academy of sciences
@@ -47045,7 +47045,7 @@
 47043	Jiménez dynasty
 47044	Liu Shuoyou
 47045	human pedro i of brazil
-47046	Liu Xie
+47046	No label defined
 47047	political party colombian liberal party
 47048	order order of the lion and the sun
 47049	human ludwig wittgenstein
