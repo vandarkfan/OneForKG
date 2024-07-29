@@ -6,9 +6,9 @@
 
 <h2 align="center">
   Overview of OneForKG
-  <img align="center"  src="./overview.png" alt="...">
+  <img align="center"  src="overview.png" alt="...">
 </h2>
-This repository includes the source code of the paper submitted to TKDE. 
+This repository includes the source code of the paper submitted to TKDD. 
 
 
 ### Dependencies
